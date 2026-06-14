@@ -1,0 +1,56 @@
+name: labs-ci
+
+# Runs the offline smoke suite for every module — on push, on PR, and monthly
+# (the "maintained" promise: catch silent boto3 / Strands / AgentCore / CDK drift
+# across the 15 cumulative snapshots before a reader does). No AWS credentials:
+# every live test is gated behind RELAY_LIVE_TESTS=1 and skips cleanly here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 6 1 * *'   # 06:00 UTC on the 1st of every month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-tests:
+    name: ${{ matrix.module }} (offline)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - module-01
+          - module-02
+          - module-03
+          - module-04
+          - module-05
+          - module-06
+          - module-07
+          - module-08
+          - module-09
+          - module-10
+          - module-11
+          - module-12
+          - module-13
+          - module-14
+          - module-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies (pinned via uv.lock)
+        working-directory: ${{ matrix.module }}
+        run: uv sync --frozen
+
+      - name: Offline smoke tests
+        working-directory: ${{ matrix.module }}
+        run: uv run pytest -q
