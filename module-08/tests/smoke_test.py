@@ -2576,6 +2576,19 @@ def test_agent_runs_on_the_smart_tier_via_config_only():
     assert not re.search(r"(us|global)\.(amazon|anthropic)\.", src)
 
 
+def test_bedrock_model_applies_the_wallclock_timeout_guardrail():
+    """GUARDRAIL (skill 2.1.3, layer 2 of 3 — timeout): the agent's bedrock-runtime
+    client carries the wall-clock read/connect timeout, so a stuck model call cannot hang
+    the run past AGENT_TIMEOUT_S. This is the timeout sibling of the stop-condition
+    (test_stop_condition_cuts_a_runaway_agent) and IAM-boundary
+    (test_mcp_lambda_role_is_bounded...) tests — all three guardrail layers now asserted.
+    Builds the real model offline (no Bedrock call) and reads back the boto client config."""
+    model = agent_mod._bedrock_model()
+    boto_cfg = model.client.meta.config
+    assert boto_cfg.read_timeout == agent_mod.AGENT_TIMEOUT_S   # read timeout == the cap
+    assert boto_cfg.connect_timeout == 10                       # bounded connect, too
+
+
 # ===========================================================================
 # Module 7 — the IAM resource boundary on the MCP Lambda role (skill 2.1.3)
 # ===========================================================================

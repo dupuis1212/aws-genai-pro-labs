@@ -86,11 +86,13 @@ uv run python setup.py
 ```
 
 > The MCP Lambda bundles only what the **server** needs (`mcp`, `pydantic`, `starlette`,
-> `relay.config`/`relay.models`) — **not** `strands-agents` (that is the client side). On a
-> non-Linux machine, install the deps for the Lambda target before zipping (the lab's build
-> copies the active venv; for a portable build use a container image or
-> `uv pip install --python-platform x86_64-manylinux ...`). Re-run `setup.py` (or
-> `setup.py --skip-kb`) to redeploy the function code after a change.
+> `relay.config`/`relay.models`) — **not** `strands-agents` (that is the client side).
+> `setup.py` already resolves those deps **for the Lambda target** — it runs
+> `uv pip install --python-platform x86_64-manylinux2014 --python-version 3.12` into a temp
+> dir before zipping, so the compiled `pydantic_core` wheel matches the Lambda runtime no
+> matter what host OS you build on (macOS/arm64 included). You do **not** need to hand-build
+> the zip or use a container. Re-run `setup.py` (or `setup.py --skip-kb`) to redeploy the
+> function code after a change.
 
 ---
 

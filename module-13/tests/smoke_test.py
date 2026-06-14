@@ -2752,6 +2752,19 @@ def test_agent_runs_on_the_smart_tier_via_config_only():
     assert not re.search(r"(us|global)\.(amazon|anthropic)\.", src)
 
 
+def test_bedrock_model_applies_the_wallclock_timeout_guardrail():
+    """GUARDRAIL (skill 2.1.3, layer 2 of 3 — timeout): the agent's bedrock-runtime
+    client carries the wall-clock read/connect timeout, so a stuck model call cannot hang
+    the run past AGENT_TIMEOUT_S. This is the timeout sibling of the stop-condition
+    (test_stop_condition_cuts_a_runaway_agent) and IAM-boundary
+    (test_mcp_lambda_role_is_bounded...) tests — all three guardrail layers now asserted.
+    Builds the real model offline (no Bedrock call) and reads back the boto client config."""
+    model = agent_mod._bedrock_model()
+    boto_cfg = model.client.meta.config
+    assert boto_cfg.read_timeout == agent_mod.AGENT_TIMEOUT_S   # read timeout == the cap
+    assert boto_cfg.connect_timeout == 10                       # bounded connect, too
+
+
 # ===========================================================================
 # Module 7 — the IAM resource boundary on the MCP Lambda role (skill 2.1.3)
 # ===========================================================================
@@ -6181,6 +6194,61 @@ def test_judge_scores_a_ticket_with_validated_structured_output():
     assert usage["inputTokens"] == 120
     assert judge_mod.normalize_score(verdict.grounding.score) == 1.0
     assert judge_mod.normalize_score(4) == 0.75       # below the 0.8 floor -> a warning
+
+
+def test_judge_scores_a_non_empty_agent_trajectory_and_penalizes_a_superfluous_tool_call():
+    """5.1.7 (agent performance — tool_usage / task_completion) scored on a REAL multi-tool
+    trajectory, not an empty actions=[]. The agent answered the order question but ALSO made a
+    redundant second lookup_order call; the judge must SEE the trajectory and score tool_usage
+    LOW for the wasted call while task_completion stays high. Asserts both that the trajectory
+    reaches the judge prompt and that the penalty parses through the JudgeVerdict schema."""
+    from relay.models import AgentAction, Answer, Citation, Triage
+    from evals import judge as judge_mod
+
+    # A trajectory with a useful call AND a superfluous duplicate (the thing tool_usage punishes).
+    actions = [
+        AgentAction(tool="lookup_order", tool_input={"order_id": "1042"},
+                    result="Order 1042: shipped 2026-06-12, arriving 2026-06-15.", approved=None),
+        AgentAction(tool="lookup_order", tool_input={"order_id": "1042"},
+                    result="Order 1042: shipped 2026-06-12, arriving 2026-06-15.", approved=None),
+    ]
+    ans = Answer(text="Order 1042 ships Friday, June 15.",
+                 citations=[Citation(source_uri="dynamodb://relay-orders/1042", snippet="x")],
+                 grounded=True)
+    tri = Triage(intent="shipping", priority="normal", sentiment="neutral")
+
+    seen_prompt: dict[str, str] = {}
+
+    def _capturing_converse(messages, *, tier, **params):
+        from relay.llm import ConverseResult
+        assert tier == config.JUDGE_TIER
+        assert params.get("service_tier") == config.JUDGE_SERVICE_TIER
+        seen_prompt["user"] = messages[0]["content"][0]["text"]
+        # The judge punishes the wasted second lookup_order: tool_usage LOW, task done.
+        verdict_json = (
+            '{"triage_ok": true, "coverage": {"score": 4, "rationale": "covered"}, '
+            '"grounding": {"score": 5, "rationale": "from the order book"}, "citations_ok": true, '
+            '"tool_usage": {"score": 2, "rationale": "called lookup_order twice for the same '
+            'order — the second call was redundant"}, '
+            '"task_completion": {"score": 5, "rationale": "the customer got the date"}, '
+            '"overall_rationale": "right answer, wasteful trajectory"}'
+        )
+        return ConverseResult(text=verdict_json, tier="judge",
+                              usage={"inputTokens": 130, "outputTokens": 50,
+                                     "totalTokens": 180}, stop_reason="end_turn")
+
+    verdict, _ = judge_mod.score_ticket(
+        ticket_message="Where is order 1042?", expected_intent="shipping",
+        expected_points=["arrival date"], must_cite=False, triage=tri, answer=ans,
+        actions=actions, converse_fn=_capturing_converse)
+
+    # The real trajectory reached the judge (both lookup_order calls are in the scored block).
+    assert "RELAY'S AGENT ACTIONS" in seen_prompt["user"]
+    assert seen_prompt["user"].count('"lookup_order"') == 2     # the duplicate is visible
+    # The judge penalized the wasted call but recognized the task was completed.
+    assert verdict.tool_usage.score == 2                        # superfluous call -> low
+    assert verdict.task_completion.score == 5                   # need still met
+    assert judge_mod.normalize_score(verdict.tool_usage.score) < 0.8   # below the floor
 
 
 def test_judge_retries_once_on_a_schema_miss_then_succeeds():

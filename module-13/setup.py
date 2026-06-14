@@ -1749,7 +1749,9 @@ def module_12_setup(*, account: str, submit_batch: bool) -> None:
 # bucket's evals/ prefix (the RAG-eval dataset + the report), which teardown.py purges
 # (B5). It needs a least-privilege IAM service role (so the Bedrock evaluation job can read
 # the KB + the dataset and write the report) and it submits a Bedrock RAG-evaluation job on
-# `relay-kb` (context relevance / coverage / correctness / faithfulness). A Bedrock
+# `relay-kb` (Correctness / Faithfulness / Completeness / CitationPrecision — the four
+# retrieve-and-generate metrics in config.RELAY_EVAL_RAG_METRICS; context relevance is a
+# retrieve-ONLY metric and is invalid in a retrieve-and-generate job). A Bedrock
 # model-evaluation job has NO job surcharge — you pay only the tokens it consumes
 # (brief §9). Every name comes from relay.config; no model ID is named here.
 
@@ -1890,8 +1892,9 @@ def submit_rag_eval_job(*, account: str, data_bucket: str, role_arn: str, s3,
                         bedrock_control, kb_id: str, submit: bool) -> str | None:
     """Upload the RAG-eval dataset and (optionally) submit the Bedrock RAG-evaluation job.
 
-    Scores `relay-kb` on context relevance / coverage / correctness / faithfulness
-    (config.RELAY_EVAL_RAG_METRICS). When `submit` is False (the default), it only uploads the
+    Scores `relay-kb` on Correctness / Faithfulness / Completeness / CitationPrecision
+    (config.RELAY_EVAL_RAG_METRICS — the four retrieve-and-generate metrics; context relevance is
+    retrieve-only and invalid here). When `submit` is False (the default), it only uploads the
     dataset and prints the exact create_evaluation_job call (so a quick setup does not block on
     a minutes-long job). The report lands under evals/output/ for teardown to purge. NO job
     surcharge — only the tokens the job consumes (brief §9). Returns the job ARN (or None).

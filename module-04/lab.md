@@ -164,7 +164,7 @@ Question: "How do I export my order history?"
                  fixed         hierarchical  semantic
   top-1 hit      Y             Y             Y
   top-k recall   1/1           1/1           1/1
-  best sim       0.74          0.79          0.77
+  best sim       0.824         0.867         0.771
 ```
 
 The "relevance" is the human label in the questions file and the score is plain

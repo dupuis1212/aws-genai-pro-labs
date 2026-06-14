@@ -4,9 +4,11 @@
 you know every bolt. Module 5 hands that pipeline to a managed **Bedrock Knowledge
 Base** (`relay-kb`) that ingests the CloudCart docs, keeps the index in sync,
 searches in **hybrid** mode, **reranks**, and returns **cited, grounded** answers.
-The KB reuses Module 4's **Amazon S3 Vectors** index `relay-docs` (the Titan V2,
-1024-dim contract) as its vector store — **no** always-on serverless search
-cluster. Relay gains `relay/kb.py`: `retrieve()` (the **Retrieve** access pattern)
+The KB creates and owns its **OWN** dedicated **Amazon S3 Vectors** index
+`relay-kb-docs` in Module 4's vector bucket (Titan V2, 1024-dim) — **not** Module
+4's `relay-docs`, which stays the DIY baseline the benchmark measures against (a
+Bedrock KB writes vectors in its own schema and cannot read Module 4's raw
+vectors). **No** always-on serverless search cluster. Relay gains `relay/kb.py`: `retrieve()` (the **Retrieve** access pattern)
 and `answer()` (the **RetrieveAndGenerate** access pattern → an `Answer` with
 `Citation`s and `grounded`).
 
@@ -38,9 +40,9 @@ uv sync
 # 0. Module 5 REUSES Module 4's storage layer. If you tore Module 4 down, run its
 #    setup + ingestion first (data bucket relay-<account_id>/docs/ + index relay-docs).
 
-# 1. Create the Knowledge Base relay-kb over the EXISTING S3 Vectors index,
-#    attach the docs/ data source, run the first ingestion job to COMPLETE
-#    (idempotent). NO always-on search cluster is provisioned.
+# 1. Create the Knowledge Base relay-kb on its OWN dedicated S3 Vectors index
+#    relay-kb-docs (in Module 4's vector bucket), attach the docs/ data source,
+#    run the first ingestion job to COMPLETE (idempotent). NO always-on cluster.
 uv run python setup.py
 
 # 2. Ask a question — generated answer + numbered citations + grounded: True.
@@ -91,8 +93,10 @@ Files (NEW or MODIFIED in Module 5):
   `Ticket`/`Triage` unchanged.
 - `relay/config.py` — **MODIFIED (additive).** Adds `RELAY_KB_NAME="relay-kb"`,
   the data-source name, the answer tier, `model_arn()`, the reranker
-  (`RERANK_MODEL_ID="amazon.rerank-v1:0"`, `rerank_model_arn()`), and reranker
-  pricing. **The Module 3 tier map and the Module 4 embedder are untouched.**
+  (`RERANK_MODEL_ID="cohere.rerank-v3-5:0"` — the only reranker live in us-east-1;
+  `amazon.rerank-v1:0` is the documented `RERANK_ALT_MODEL_ID` for Regions that
+  carry it, `rerank_model_arn()`), and reranker pricing. **The Module 3 tier map
+  and the Module 4 embedder are untouched.**
 - `relay/__init__.py` — **MODIFIED (additive).** Tracks the new `kb` submodule.
 - `setup.py` / `teardown.py` — **NEW (M5 versions).** Create / clean up the KB,
   data source, and IAM role; teardown keeps the S3 Vectors index + docs for M7.
