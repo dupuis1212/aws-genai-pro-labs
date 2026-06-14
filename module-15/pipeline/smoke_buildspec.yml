@@ -1,0 +1,29 @@
+# pipeline/smoke_buildspec.yml — the CodeBuild SMOKE stage for Relay's pipeline (Module 11).
+#
+# Runs AFTER deploy, against the DEPLOYED API: a real POST /tickets round-trip + a poll of
+# GET /tickets/{id}. A FAILED smoke stage stops the pipeline before any further promotion,
+# so a deploy that breaks the live API does not stand — combined with CloudFormation's
+# automatic rollback on a failed deploy, this is the rollback gate (skill 2.3.5).
+#
+# It resolves the API URL from the deployed RelayApiStack's CloudFormation output, then runs
+# pipeline/smoke_test_live.py (a tiny, dependency-free POST->poll-GET check). The eval-gate
+# (golden-set regression) is the Module 13 addition — NOT here.
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - pip install uv
+      - uv sync --frozen
+  build:
+    commands:
+      # Resolve the deployed API URL from the stack output (never hard-coded).
+      - >
+        export RELAY_API_URL=$(aws cloudformation describe-stacks
+        --stack-name RelayApiStack
+        --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+      - echo "Smoke-testing the deployed API at $RELAY_API_URL"
+      # POST a ticket, then poll GET until a terminal status (or fail -> pipeline stops).
+      - uv run python pipeline/smoke_test_live.py "$RELAY_API_URL"

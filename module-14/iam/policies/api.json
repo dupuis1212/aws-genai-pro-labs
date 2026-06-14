@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "Least-privilege policy for the Relay API component (the future serverless front door) — Module 10, skill 3.2.1. Module 10 authors the role NOW (least-privilege is designed before the door is opened, not bolted on after) so the deployment module can attach to a ready, scoped identity. Scoped to ONLY what is knowable at Module 10: the public API receives a ticket and reads/writes its TicketRecord in relay-tickets, and writes its own CloudWatch Logs. It does NOT read relay-orders (the agent does that) and does NOT call a model directly. The downstream wiring (the work queue, the event bus) belongs to the serverless deployment module and is added there by addition — this role is the M10 baseline, not the full M11 grant. ${ACCOUNT_ID}/${REGION} substituted by setup.py from STS.",
+  "Statement": [
+    {
+      "Sid": "WriteAndReadTicketsOnly",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:Query"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:${REGION}:${ACCOUNT_ID}:table/relay-tickets"
+      ]
+    },
+    {
+      "Sid": "OwnLogsOnly",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:${REGION}:${ACCOUNT_ID}:log-group:/aws/lambda/relay-api-*:*"
+      ]
+    }
+  ]
+}

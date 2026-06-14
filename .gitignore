@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments (uv)
+.venv/
+venv/
+env/
+
+# Environment / secrets — never commit AWS creds (the course uses AWS_PROFILE,
+# never a .env for AWS, but block these anyway as a safety net).
+.env
+.env.*
+*.pem
+credentials
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

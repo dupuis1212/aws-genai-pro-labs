@@ -1,0 +1,4 @@
+# Per-account state written by setup.py: the Bedrock Prompt Management prompt ID.
+# Account-specific and recreated on every `uv run python setup.py`, so it must
+# not be committed. triage.py reads it (or the RELAY_TRIAGE_PROMPT_ID env var).
+prompts/.prompt_id

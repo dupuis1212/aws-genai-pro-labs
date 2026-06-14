@@ -1,0 +1,44 @@
+[
+  {
+    "question": "How do I export my order history?",
+    "relevant_docs": ["orders-export"],
+    "category": "orders",
+    "note": "the article's opening hallucination — the answer is a real doc"
+  },
+  {
+    "question": "I need to back up all my orders before I downgrade my plan. Where is that?",
+    "relevant_docs": ["orders-export"],
+    "category": "orders"
+  },
+  {
+    "question": "Why was I charged twice for the same order?",
+    "relevant_docs": ["billing-duplicate-charge"],
+    "category": "billing"
+  },
+  {
+    "question": "A pending authorization looks like a double charge — is it real?",
+    "relevant_docs": ["billing-duplicate-charge"],
+    "category": "billing"
+  },
+  {
+    "question": "I forgot my password and my account seems locked. How do I get back in?",
+    "relevant_docs": ["account-password-reset"],
+    "category": "account"
+  },
+  {
+    "question": "Where do I find the tracking number for an order that already shipped?",
+    "relevant_docs": ["shipping-tracking"],
+    "category": "shipping"
+  },
+  {
+    "question": "What does error code ERR-402 mean at checkout?",
+    "relevant_docs": ["technical-error-codes"],
+    "category": "technical",
+    "note": "EXACT identifier — pure semantic similarity can miss this; hybrid search (Module 5) fixes it"
+  },
+  {
+    "question": "My webhook endpoint stopped receiving order.created events — how do retries and signature verification work?",
+    "relevant_docs": ["technical-webhooks"],
+    "category": "technical"
+  }
+]

@@ -1,0 +1,36 @@
+[project]
+name = "aws-genai-pro-labs-module-03"
+version = "0.3.0"
+description = "Module 3 of AWS GenAI Pro Mastery — Relay's FM integration layer: model selection, routing, streaming (ConverseStream), and resilience (backoff, cross-Region fallback)."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers bedrock-runtime (Converse/ConverseStream), bedrock-agent
+    # (Prompt Management), and appconfig (the optional Try-it-yourself). Module 3
+    # adds NO new runtime dependency — the FM integration layer is stdlib + boto3.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the two tests that make REAL Bedrock calls (one fast ConverseStream
+# + one smart Converse; together a fraction of a cent). They are skipped unless
+# RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented call budget.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 3 ships the cumulative relay/ package plus the lab scripts.
+packages = ["relay"]
+include = ["run_prompt_tests.py", "demo_llm.py", "setup.py", "teardown.py"]

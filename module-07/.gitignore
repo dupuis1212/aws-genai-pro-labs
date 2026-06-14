@@ -1,0 +1,16 @@
+# Per-account state written by setup.py: the Bedrock Prompt Management prompt ID.
+# Account-specific and recreated on every `uv run python setup.py`, so it must
+# not be committed. triage.py reads it (or the RELAY_TRIAGE_PROMPT_ID env var).
+prompts/.prompt_id
+
+# Module 5: the Knowledge Base id + data-source id setup.py records so kb.py,
+# compare_retrieval.py, and freshness_test.py find the KB without an env var.
+# Account-specific and recreated on every `uv run python setup.py` (or settable
+# via RELAY_KB_ID); never committed.
+.kb_id
+.kb_data_source_id
+
+# Module 7: the deployed CloudCart MCP server's Function URL that setup.py records so
+# relay/tools.py can build an MCP client. Account/deploy-specific and recreated on every
+# `uv run python setup.py` (or settable via RELAY_MCP_URL); never committed.
+.mcp_url

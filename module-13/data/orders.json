@@ -1,0 +1,380 @@
+[
+  {
+    "order_id": "1042",
+    "status": "in_transit",
+    "customer_email": "dana.whitfield@example.com",
+    "placed_at": "2026-06-05",
+    "shipped_at": "2026-06-08",
+    "estimated_delivery": "2026-06-15",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1042-88213",
+    "total": 129.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-TEE-BLK-M", "name": "CloudCart Logo Tee (Black, M)", "qty": 2, "price": 29.0},
+      {"sku": "CC-HOODIE-GRY-L", "name": "CloudCart Hoodie (Grey, L)", "qty": 1, "price": 71.0}
+    ],
+    "note": "Original estimate was Monday 2026-06-08; carrier delay pushed delivery to 2026-06-15."
+  },
+  {
+    "order_id": "1043",
+    "status": "delivered",
+    "customer_email": "marcus.lee@example.com",
+    "placed_at": "2026-05-28",
+    "shipped_at": "2026-05-30",
+    "estimated_delivery": "2026-06-03",
+    "delivered_at": "2026-06-02",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1043-44190",
+    "total": 49.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-MUG-WHT", "name": "CloudCart Mug (White)", "qty": 1, "price": 19.0},
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 3, "price": 10.0}
+    ]
+  },
+  {
+    "order_id": "1044",
+    "status": "processing",
+    "customer_email": "ana.ruiz@example.com",
+    "placed_at": "2026-06-12",
+    "estimated_delivery": "2026-06-19",
+    "carrier": "CloudCart Express",
+    "total": 215.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BACKPACK", "name": "CloudCart Backpack", "qty": 1, "price": 119.0},
+      {"sku": "CC-BOTTLE", "name": "CloudCart Water Bottle", "qty": 4, "price": 24.0}
+    ],
+    "note": "Awaiting warehouse pick; not yet shipped."
+  },
+  {
+    "order_id": "1045",
+    "status": "cancelled",
+    "customer_email": "priya.nair@example.com",
+    "placed_at": "2026-06-01",
+    "cancelled_at": "2026-06-02",
+    "total": 89.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-CAP", "name": "CloudCart Cap", "qty": 1, "price": 25.0},
+      {"sku": "CC-SOCKS", "name": "CloudCart Socks (3-pack)", "qty": 4, "price": 16.0}
+    ],
+    "note": "Cancelled at the customer's request before shipment; refund issued."
+  },
+  {
+    "order_id": "1046",
+    "status": "in_transit",
+    "customer_email": "tom.becker@example.com",
+    "placed_at": "2026-06-09",
+    "shipped_at": "2026-06-11",
+    "estimated_delivery": "2026-06-16",
+    "carrier": "PostNord",
+    "tracking_number": "PN-1046-77321",
+    "total": 58.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-NOTEBOOK", "name": "CloudCart Notebook", "qty": 2, "price": 14.0},
+      {"sku": "CC-PEN-SET", "name": "CloudCart Pen Set", "qty": 1, "price": 30.0}
+    ]
+  },
+  {
+    "order_id": "1047",
+    "status": "delivered",
+    "customer_email": "lena.fischer@example.com",
+    "placed_at": "2026-05-20",
+    "shipped_at": "2026-05-22",
+    "estimated_delivery": "2026-05-27",
+    "delivered_at": "2026-05-26",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1047-10984",
+    "total": 142.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-NVY-M", "name": "CloudCart Hoodie (Navy, M)", "qty": 2, "price": 71.0}
+    ]
+  },
+  {
+    "order_id": "1048",
+    "status": "return_requested",
+    "customer_email": "omar.haddad@example.com",
+    "placed_at": "2026-05-30",
+    "shipped_at": "2026-06-01",
+    "delivered_at": "2026-06-05",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1048-55012",
+    "total": 71.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-GRY-S", "name": "CloudCart Hoodie (Grey, S)", "qty": 1, "price": 71.0}
+    ],
+    "note": "Customer opened a return: wrong size. Return label sent."
+  },
+  {
+    "order_id": "1049",
+    "status": "processing",
+    "customer_email": "yuki.tanaka@example.com",
+    "placed_at": "2026-06-13",
+    "estimated_delivery": "2026-06-20",
+    "total": 33.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-MUG-BLK", "name": "CloudCart Mug (Black)", "qty": 1, "price": 19.0},
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 1, "price": 10.0}
+    ]
+  },
+  {
+    "order_id": "1050",
+    "status": "in_transit",
+    "customer_email": "sara.kovac@example.com",
+    "placed_at": "2026-06-07",
+    "shipped_at": "2026-06-09",
+    "estimated_delivery": "2026-06-14",
+    "carrier": "DHL",
+    "tracking_number": "DHL-1050-99100",
+    "total": 198.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BACKPACK", "name": "CloudCart Backpack", "qty": 1, "price": 119.0},
+      {"sku": "CC-TEE-WHT-L", "name": "CloudCart Logo Tee (White, L)", "qty": 2, "price": 29.0}
+    ]
+  },
+  {
+    "order_id": "1051",
+    "status": "delivered",
+    "customer_email": "noah.silva@example.com",
+    "placed_at": "2026-05-15",
+    "shipped_at": "2026-05-17",
+    "delivered_at": "2026-05-21",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1051-31278",
+    "total": 25.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-CAP", "name": "CloudCart Cap", "qty": 1, "price": 25.0}
+    ]
+  },
+  {
+    "order_id": "1052",
+    "status": "processing",
+    "customer_email": "emma.brown@example.com",
+    "placed_at": "2026-06-13",
+    "estimated_delivery": "2026-06-20",
+    "total": 119.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BACKPACK", "name": "CloudCart Backpack", "qty": 1, "price": 119.0}
+    ]
+  },
+  {
+    "order_id": "1053",
+    "status": "in_transit",
+    "customer_email": "leo.martin@example.com",
+    "placed_at": "2026-06-06",
+    "shipped_at": "2026-06-08",
+    "estimated_delivery": "2026-06-13",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1053-67004",
+    "total": 88.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-GRY-M", "name": "CloudCart Hoodie (Grey, M)", "qty": 1, "price": 71.0},
+      {"sku": "CC-MUG-WHT", "name": "CloudCart Mug (White)", "qty": 1, "price": 17.0}
+    ]
+  },
+  {
+    "order_id": "1054",
+    "status": "delivered",
+    "customer_email": "mia.wong@example.com",
+    "placed_at": "2026-05-25",
+    "shipped_at": "2026-05-27",
+    "delivered_at": "2026-06-01",
+    "carrier": "DHL",
+    "tracking_number": "DHL-1054-22087",
+    "total": 60.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BOTTLE", "name": "CloudCart Water Bottle", "qty": 2, "price": 24.0},
+      {"sku": "CC-NOTEBOOK", "name": "CloudCart Notebook", "qty": 1, "price": 12.0}
+    ]
+  },
+  {
+    "order_id": "1055",
+    "status": "processing",
+    "customer_email": "felix.gruber@example.com",
+    "placed_at": "2026-06-12",
+    "estimated_delivery": "2026-06-18",
+    "total": 142.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-NVY-L", "name": "CloudCart Hoodie (Navy, L)", "qty": 2, "price": 71.0}
+    ]
+  },
+  {
+    "order_id": "1056",
+    "status": "in_transit",
+    "customer_email": "olivia.dupont@example.com",
+    "placed_at": "2026-06-08",
+    "shipped_at": "2026-06-10",
+    "estimated_delivery": "2026-06-15",
+    "carrier": "PostNord",
+    "tracking_number": "PN-1056-40921",
+    "total": 39.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 3, "price": 10.0},
+      {"sku": "CC-PEN-SET", "name": "CloudCart Pen Set", "qty": 1, "price": 9.0}
+    ]
+  },
+  {
+    "order_id": "1057",
+    "status": "delivered",
+    "customer_email": "henry.adams@example.com",
+    "placed_at": "2026-05-18",
+    "shipped_at": "2026-05-20",
+    "delivered_at": "2026-05-24",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1057-83351",
+    "total": 95.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BACKPACK-MINI", "name": "CloudCart Mini Backpack", "qty": 1, "price": 95.0}
+    ]
+  },
+  {
+    "order_id": "1058",
+    "status": "cancelled",
+    "customer_email": "grace.kim@example.com",
+    "placed_at": "2026-06-03",
+    "cancelled_at": "2026-06-03",
+    "total": 48.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-MUG-WHT", "name": "CloudCart Mug (White)", "qty": 2, "price": 19.0},
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 1, "price": 10.0}
+    ],
+    "note": "Cancelled within the hour; full refund."
+  },
+  {
+    "order_id": "1059",
+    "status": "in_transit",
+    "customer_email": "isaac.bauer@example.com",
+    "placed_at": "2026-06-09",
+    "shipped_at": "2026-06-12",
+    "estimated_delivery": "2026-06-17",
+    "carrier": "DHL",
+    "tracking_number": "DHL-1059-71640",
+    "total": 166.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-BLK-XL", "name": "CloudCart Hoodie (Black, XL)", "qty": 2, "price": 71.0},
+      {"sku": "CC-CAP", "name": "CloudCart Cap", "qty": 1, "price": 24.0}
+    ]
+  },
+  {
+    "order_id": "1060",
+    "status": "processing",
+    "customer_email": "zoe.clarke@example.com",
+    "placed_at": "2026-06-13",
+    "estimated_delivery": "2026-06-20",
+    "total": 29.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-TEE-BLK-S", "name": "CloudCart Logo Tee (Black, S)", "qty": 1, "price": 29.0}
+    ]
+  },
+  {
+    "order_id": "1061",
+    "status": "delivered",
+    "customer_email": "david.olsen@example.com",
+    "placed_at": "2026-05-22",
+    "shipped_at": "2026-05-24",
+    "delivered_at": "2026-05-29",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1061-19002",
+    "total": 113.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-GRY-L", "name": "CloudCart Hoodie (Grey, L)", "qty": 1, "price": 71.0},
+      {"sku": "CC-BOTTLE", "name": "CloudCart Water Bottle", "qty": 1, "price": 24.0},
+      {"sku": "CC-MUG-BLK", "name": "CloudCart Mug (Black)", "qty": 1, "price": 18.0}
+    ]
+  },
+  {
+    "order_id": "1062",
+    "status": "in_transit",
+    "customer_email": "nina.popovic@example.com",
+    "placed_at": "2026-06-10",
+    "shipped_at": "2026-06-12",
+    "estimated_delivery": "2026-06-17",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1062-60873",
+    "total": 71.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-NVY-S", "name": "CloudCart Hoodie (Navy, S)", "qty": 1, "price": 71.0}
+    ]
+  },
+  {
+    "order_id": "1063",
+    "status": "return_requested",
+    "customer_email": "paul.schmidt@example.com",
+    "placed_at": "2026-05-29",
+    "shipped_at": "2026-05-31",
+    "delivered_at": "2026-06-04",
+    "carrier": "DHL",
+    "tracking_number": "DHL-1063-30551",
+    "total": 119.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-BACKPACK", "name": "CloudCart Backpack", "qty": 1, "price": 119.0}
+    ],
+    "note": "Return opened: zipper defect. Replacement offered."
+  },
+  {
+    "order_id": "1064",
+    "status": "processing",
+    "customer_email": "amelia.rossi@example.com",
+    "placed_at": "2026-06-13",
+    "estimated_delivery": "2026-06-19",
+    "total": 52.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-SOCKS", "name": "CloudCart Socks (3-pack)", "qty": 2, "price": 16.0},
+      {"sku": "CC-MUG-WHT", "name": "CloudCart Mug (White)", "qty": 1, "price": 20.0}
+    ]
+  },
+  {
+    "order_id": "1065",
+    "status": "delivered",
+    "customer_email": "chris.evans@example.com",
+    "placed_at": "2026-05-12",
+    "shipped_at": "2026-05-14",
+    "delivered_at": "2026-05-19",
+    "carrier": "CloudCart Express",
+    "tracking_number": "CCX-1065-74410",
+    "total": 84.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-HOODIE-GRY-XL", "name": "CloudCart Hoodie (Grey, XL)", "qty": 1, "price": 71.0},
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 1, "price": 13.0}
+    ]
+  },
+  {
+    "order_id": "1066",
+    "status": "in_transit",
+    "customer_email": "sofia.moreno@example.com",
+    "placed_at": "2026-06-11",
+    "shipped_at": "2026-06-13",
+    "estimated_delivery": "2026-06-18",
+    "carrier": "PostNord",
+    "tracking_number": "PN-1066-50238",
+    "total": 47.0,
+    "currency": "USD",
+    "items": [
+      {"sku": "CC-NOTEBOOK", "name": "CloudCart Notebook", "qty": 1, "price": 14.0},
+      {"sku": "CC-PEN-SET", "name": "CloudCart Pen Set", "qty": 1, "price": 18.0},
+      {"sku": "CC-STICKERS", "name": "CloudCart Sticker Pack", "qty": 1, "price": 15.0}
+    ]
+  }
+]

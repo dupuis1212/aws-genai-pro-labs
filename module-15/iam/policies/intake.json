@@ -1,0 +1,39 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "Least-privilege policy for the Relay INTAKE component (relay.intake) — Module 10, skill 3.2.1. The intake pipeline validates/normalizes a ticket, REDACTS PII with Amazon Comprehend (DetectPiiEntities + DetectEntities), uploads an accepted screenshot to the data bucket's attachments/ prefix, and reads it once with the vision tier through converse(). It needs EXACTLY: Comprehend detect on text in flight, S3 PutObject under attachments/ only, and Bedrock InvokeModel for the vision Converse call. No DynamoDB, no guardrail admin, no broad grant. Comprehend's stateless Detect* operations do not support resource-level ARNs, so they are bounded by an account+Region condition instead of a resource wildcard (the least-privilege idiom for such actions). ${ACCOUNT_ID}/${REGION} are substituted by setup.py at create time from STS (the account id is account-specific and never hard-coded).",
+  "Statement": [
+    {
+      "Sid": "ComprehendPiiAndEntitiesInFlight",
+      "Effect": "Allow",
+      "Action": [
+        "comprehend:DetectPiiEntities",
+        "comprehend:DetectEntities"
+      ],
+      "Resource": [
+        "arn:aws:comprehend:${REGION}:${ACCOUNT_ID}:*"
+      ]
+    },
+    {
+      "Sid": "WriteAttachmentsPrefixOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::relay-${ACCOUNT_ID}/attachments/*"
+      ]
+    },
+    {
+      "Sid": "VisionConverseOnInferenceProfiles",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:inference-profile/us.amazon.nova-lite-v1:0",
+        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-lite-v1:0"
+      ]
+    }
+  ]
+}

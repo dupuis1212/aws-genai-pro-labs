@@ -1,0 +1,69 @@
+[project]
+name = "aws-genai-pro-labs-module-07"
+version = "0.7.0"
+description = "Module 7 of AWS GenAI Pro Mastery — agentic AI on AWS: Relay becomes a Strands ReAct agent with the tools search_kb / lookup_order / create_ticket, whose two business tools are served by a stateless CloudCart MCP server on AWS Lambda; stop conditions, a timeout, and an IAM-bounded Lambda role; freezes the AgentAction and TicketRecord schemas — on top of the Module 6 intake pipeline + Module 5 managed Knowledge Base."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers the inherited layers (Converse, Comprehend, S3, S3 Vectors, the KB
+    # control/runtime planes) AND the Module 7 agent additions:
+    #   dynamodb        : relay-orders (lookup_order) + relay-tickets (create_ticket /
+    #                     the persisted TicketRecord);
+    #   lambda / iam    : deploy + invoke the stateless CloudCart MCP server on AWS
+    #                     Lambda and its IAM-bounded execution role (skill 2.1.3).
+    # NEW runtime dependencies in Module 7 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — strands moves fast, so this is pinned and the lock is committed):
+    #   strands-agents  : the Strands Agents SDK — the code-first, model-driven ReAct
+    #                     agent loop, @tool definitions, and the MCP client. Latest
+    #                     1.43.0 -> pinned ~=1.43 (re-verify each agent module M7/M8).
+    #   mcp             : the official Model Context Protocol SDK — the stateless MCP
+    #                     server (FastMCP) the Lambda hosts + the client the agent uses.
+    #                     Latest 1.27.2 -> pinned ~=1.27. MCP spec revision 2025-06-18.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+    "strands-agents~=1.43",
+    "mcp~=1.27",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock/AWS calls. Budget = up to SEVEN:
+# Modules 2/3 contribute two (one fast ConverseStream + one smart Converse); Module 4
+# contributes two Titan embeddings calls; Module 5 contributes ONE RetrieveAndGenerate;
+# Module 6 contributes ONE Nova Lite vision Converse call on the bundled screenshot;
+# Module 7 contributes ONE full Strands agent run (a smart-tier ReAct loop — a few
+# model calls inside one capped run, < $0.02). All are skipped unless
+# RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented call budget. No live
+# KB creation / ingestion, no Lambda deploy, and no S3 upload from the tests.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3 (the attachments/ upload + the teardown purge), STS, IAM, the
+    # S3 Vectors lifecycle, and the bedrock-agent KB control plane so the smoke test
+    # runs offline with no credentials. The data planes moto does not implement —
+    # Comprehend detect_entities, the Converse vision call, and Retrieve /
+    # RetrieveAndGenerate — are driven by botocore Stubbers in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 7 ships the cumulative relay/ package (now with relay/agent.py +
+# relay/tools.py), the inherited ingest/ pipeline, the NEW mcp_server/ package (the
+# stateless CloudCart MCP server the Lambda hosts), and the lab scripts.
+packages = ["relay", "ingest", "mcp_server"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "setup.py",
+    "teardown.py",
+]

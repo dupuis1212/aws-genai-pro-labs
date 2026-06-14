@@ -1,0 +1,15 @@
+{
+  "_comment": "Objective expectations for the 10-ticket triage regression suite (run_prompt_tests.py). Each entry asserts the expected intent and priority for the matching ticket-NNN.json. Sentiment is intentionally NOT asserted: it is the softest of the three fields and the suite keeps its pass/fail criteria objective (valid JSON + correct intent + correct priority). The 10 tickets cover all 5 intents and the edge cases called for in the brief: empty (008), bilingual+furious (009), and shouting/all-caps (010).",
+  "expectations": [
+    { "ticket_id": "ticket-001", "expected_intent": "billing",   "expected_priority": "high" },
+    { "ticket_id": "ticket-002", "expected_intent": "technical", "expected_priority": "urgent" },
+    { "ticket_id": "ticket-003", "expected_intent": "account",   "expected_priority": "low" },
+    { "ticket_id": "ticket-004", "expected_intent": "shipping",  "expected_priority": "low" },
+    { "ticket_id": "ticket-005", "expected_intent": "other",     "expected_priority": "low" },
+    { "ticket_id": "ticket-006", "expected_intent": "billing",   "expected_priority": "urgent" },
+    { "ticket_id": "ticket-007", "expected_intent": "shipping",  "expected_priority": "high" },
+    { "ticket_id": "ticket-008", "expected_intent": "other",     "expected_priority": "low" },
+    { "ticket_id": "ticket-009", "expected_intent": "billing",   "expected_priority": "urgent" },
+    { "ticket_id": "ticket-010", "expected_intent": "technical", "expected_priority": "high" }
+  ]
+}

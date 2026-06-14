@@ -1,0 +1,124 @@
+[project]
+name = "aws-genai-pro-labs-module-11"
+version = "0.11.0"
+description = "Module 11 of AWS GenAI Pro Mastery — shipping Relay: serverless deployment, enterprise integration, and CI/CD. Relay gets a FRONT DOOR — four AWS Lambda handlers behind Amazon API Gateway (POST /tickets -> 202 {ticket_id}, GET /tickets/{id} -> TicketRecord, POST /tickets/{id}/approve realizing the M8 HITL refund gate, and an SQS worker that invokes the deployed agent through the frozen run_relay contract). Work runs ASYNC via Amazon SQS; escalations and approval-required outcomes publish to the relay-events Amazon EventBridge bus (loose coupling). The whole front door is described in AWS CDK (cdk/) and re-deployed on every commit by a CodePipeline with offline tests, smoke tests, and rollback (pipeline/). It WRAPS the unchanged relay/ package — no agent rebuild, no schema change (the full TicketRecord status lifecycle is exercised end-to-end) — on top of the M10 PII/IAM, the M9 guardrail, the M8 AgentCore deployment, the M7 agent + MCP server + tables, and the M5 Knowledge Base."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers the inherited layers (Converse, Comprehend, S3, S3 Vectors, the KB
+    # control/runtime planes) AND the Module 7 agent additions:
+    #   dynamodb        : relay-orders (lookup_order) + relay-tickets (create_ticket /
+    #                     the persisted TicketRecord);
+    #   lambda / iam    : deploy + invoke the stateless CloudCart MCP server on AWS
+    #                     Lambda and its IAM-bounded execution role (skill 2.1.3).
+    # NEW runtime dependencies in Module 7 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — strands moves fast, so this is pinned and the lock is committed):
+    #   strands-agents  : the Strands Agents SDK — the code-first, model-driven ReAct
+    #                     agent loop, @tool definitions, and the MCP client. Latest
+    #                     1.43.0 -> pinned ~=1.43 (re-verify each agent module M7/M8).
+    #   mcp             : the official Model Context Protocol SDK — the stateless MCP
+    #                     server (FastMCP) the Lambda hosts + the client the agent uses.
+    #                     Latest 1.27.2 -> pinned ~=1.27. MCP spec revision 2025-06-18.
+    # NEW runtime dependency in Module 8 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — Bedrock AgentCore is GA since 13 Oct 2025):
+    #   bedrock-agentcore : the AgentCore Runtime SDK. It provides BedrockAgentCoreApp —
+    #                     the @app.entrypoint wrapper that turns relay/run.py into the
+    #                     HTTP contract AgentCore Runtime invokes (one JSON payload in,
+    #                     one JSON response out). Latest 1.14.1 -> pinned ~=1.14. The
+    #                     DEPLOYMENT tool is the standalone `agentcore` CLI (installed
+    #                     outside these Python deps, like the AWS CLI) — NEVER the legacy
+    #                     bedrock-agentcore-starter-toolkit. AgentCore Memory is created
+    #                     by setup.py over the bedrock-agentcore-control plane in boto3.
+    # Module 9 (safety engineering) adds NO new runtime dependency: Bedrock Guardrails is
+    # GA (June 2026) and is reached through the EXISTING boto3 — the `bedrock` CONTROL
+    # plane (CreateGuardrail / CreateGuardrailVersion / DeleteGuardrail in setup/teardown)
+    # and the `bedrock-runtime` plane (ApplyGuardrail in relay/safety.py; the in-line
+    # guardrailConfig on Converse in relay/llm.py). No NeMo Guardrails, no third-party
+    # moderation library — that is the AWS-native path the course teaches.
+    # Module 10 (security/privacy/governance) adds NO new runtime dependency: PII detection
+    # is Amazon Comprehend (DetectPiiEntities) over the existing boto3; IAM / CloudTrail too.
+    # NEW runtime dependencies in Module 11 (re-verified on PyPI on generation day,
+    # 14 Jun 2026 — decision B6 moves the M11+ infra to AWS CDK v2):
+    #   aws-cdk-lib   : the AWS CDK v2 construct library — the DECLARATIVE infra for the
+    #                   front door (cdk/relay_cdk/api_stack.py: API Gateway + the four
+    #                   Lambda handlers + SQS + the relay-events bus) and the CI/CD pipeline
+    #                   (cdk/relay_cdk/pipeline_stack.py: CodePipeline build->smoke->deploy
+    #                   ->rollback). Latest 2.259.0 -> pinned ~=2.259. The `cdk` CLI is
+    #                   installed outside these Python deps (npm install -g aws-cdk), like
+    #                   the AWS CLI. The handlers (relay/api/) need only boto3 at runtime;
+    #                   aws-cdk-lib is a SYNTH-time dep (it imports lazily inside the stack
+    #                   builders so the offline smoke test runs without it on the path).
+    #   constructs    : the CDK construct base library aws-cdk-lib builds on. Latest 10.6.0
+    #                   -> pinned ~=10.0 (the v2 line).
+    "boto3~=1.43",
+    "pydantic~=2.0",
+    "strands-agents~=1.43",
+    "mcp~=1.27",
+    "bedrock-agentcore~=1.14",
+    "aws-cdk-lib~=2.259",
+    "constructs~=10.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock/AWS calls. Budget = up to TEN:
+# Modules 2/3 contribute two (one fast ConverseStream + one smart Converse); Module 4
+# contributes two Titan embeddings calls; Module 5 contributes ONE RetrieveAndGenerate;
+# Module 6 contributes ONE Nova Lite vision Converse call on the bundled screenshot;
+# Module 7 contributes ONE full Strands agent run (a smart-tier ReAct loop — a few
+# model calls inside one capped run, < $0.02); Module 8 contributes ONE handoff run
+# (the Billing specialist proposes a refund, ticket parks in awaiting_approval — a few
+# smart-tier calls, < $0.02; no AgentCore Runtime/long-term-Memory cost); Module 9
+# contributes TWO standalone ApplyGuardrail calls (one attack -> BLOCKED, one legitimate
+# ticket -> passed — a couple of text units, well under a cent), skipping cleanly if the
+# guardrail is not set up. Module 11 contributes ONE capped end-to-end round-trip — a real
+# POST /tickets -> poll GET against the DEPLOYED API (the worker runs ONE smart-tier agent
+# loop, < $0.02 as of June 2026) — skipping cleanly if RELAY_API_URL is not set. All are
+# skipped unless RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented call budget
+# (well under $0.09 total as of June 2026). No live KB / Lambda / table / Memory / guardrail
+# creation in the tests, no S3 upload (the deployed stack is stood up by `cdk deploy`, not
+# by a test).
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+# Keep `uv run pytest` collecting ONLY the lab's own tests. `cdk synth`/`cdk deploy`
+# writes a `cdk.out/asset.*/` staging tree (the bundled Lambda deps carry their OWN
+# test files); without this a bare `uv run pytest` after a synth tries to collect them
+# and errors. The pipeline runs `pytest tests/smoke_test.py` explicitly; this makes the
+# local default just as robust.
+testpaths = ["tests"]
+norecursedirs = ["cdk.out", "cdk/cdk.out", ".venv", "node_modules", "*.egg-info"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3 (the attachments/ upload + the teardown purge), STS, IAM, the
+    # S3 Vectors lifecycle, and the bedrock-agent KB control plane so the smoke test
+    # runs offline with no credentials. The data planes moto does not implement —
+    # Comprehend detect_entities, the Converse vision call, and Retrieve /
+    # RetrieveAndGenerate — are driven by botocore Stubbers in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 11 ships the cumulative relay/ package — now with the NEW relay/api/ subpackage
+# (the four serverless front-door handlers: post/get/approve/worker + common) WRAPPING the
+# unchanged M2-M10 modules — plus the inherited ingest/ pipeline, the mcp_server/ package
+# the Lambda hosts, and the cdk/ app (the AWS CDK stacks: api + pipeline). The lab scripts
+# carry over (incl. run_attacks.py — the 12-attack adversarial suite). agentcore/ carries the
+# agentcore-CLI deploy config, not a Python package.
+packages = ["relay", "ingest", "mcp_server", "cdk"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "run_attacks.py",
+    "setup.py",
+    "teardown.py",
+    "pipeline/smoke_test_live.py",
+]

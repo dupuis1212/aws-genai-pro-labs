@@ -1,0 +1,16 @@
+# CloudWatch Logs Insights — cost & tokens per ticket over time (cost-anomaly diagnosis).
+#
+# Run against Relay's worker EMF log group (namespace Relay/Ops; the worker emits CostCents +
+# InputTokens/OutputTokens per ticket). The runbook's diagnostic for "Cost doubled, no extra
+# traffic" (skill 4.3.4 / 4.3.2): a cost spike with FLAT ticket volume but RISING tokens/
+# ticket points at an agent tool loop (more converse() calls per ticket), not more customers.
+# The cost-anomaly alarm catches it automatically (anomaly-detection band); this query is how
+# you confirm the cause — average cost and tokens per ticket per 5-minute bin.
+
+fields @timestamp, CostCents, InputTokens, OutputTokens
+| stats avg(CostCents) as avg_cost_cents,
+        avg(InputTokens) as avg_input_tokens,
+        avg(OutputTokens) as avg_output_tokens,
+        count(*) as tickets
+        by bin(5m)
+| sort @timestamp desc

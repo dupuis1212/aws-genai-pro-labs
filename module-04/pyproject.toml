@@ -1,0 +1,49 @@
+[project]
+name = "aws-genai-pro-labs-module-04"
+version = "0.4.0"
+description = "Module 4 of AWS GenAI Pro Mastery — RAG foundations: chunking strategies, Titan Text Embeddings V2, and an Amazon S3 Vectors index; DIY retrieval compared across three chunkings."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers everything Module 4 needs: bedrock-runtime (Converse for the
+    # inherited LLM layer, plus the SOLE invoke_model — Titan embeddings), s3
+    # (the data bucket), s3vectors (the vector store), and sts (account id).
+    # Module 4 adds NO new runtime dependency — the ingestion pipeline is stdlib
+    # + boto3 + the inherited Pydantic schemas.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock calls. Modules 2/3 contribute two
+# (one fast ConverseStream + one smart Converse); Module 4 contributes two Titan
+# embeddings calls. All are skipped unless RELAY_LIVE_TESTS=1 — see
+# tests/smoke_test.py for the documented call budget. No live S3 Vectors writes.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3, STS, and the S3 Vectors lifecycle (bucket/index/PutVectors)
+    # so the smoke test runs offline with no credentials. The kNN query, which moto
+    # does not implement, is driven by a botocore Stubber in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 4 ships the cumulative relay/ package, the new ingest/ pipeline, and the
+# lab scripts.
+packages = ["relay", "ingest"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "setup.py",
+    "teardown.py",
+]

@@ -1,0 +1,49 @@
+[
+  {
+    "question": "How do I change my CloudCart subscription plan?",
+    "relevant_docs": ["billing-plans"],
+    "category": "billing",
+    "note": "the lab's headline question — answered from the official docs, cited"
+  },
+  {
+    "question": "How much does the Growth plan cost per month?",
+    "relevant_docs": ["billing-plans"],
+    "category": "billing",
+    "exact_identifier": "Growth",
+    "note": "EXACT plan name + price — hybrid search pins 'Growth'/'$79' that pure semantic blurs across the three plans"
+  },
+  {
+    "question": "What does error code ERR-402 mean at checkout?",
+    "relevant_docs": ["technical-error-codes"],
+    "category": "technical",
+    "exact_identifier": "ERR-402",
+    "note": "EXACT identifier — pure semantic similarity can miss the token '402'; hybrid search nails it"
+  },
+  {
+    "question": "How do I downgrade my plan without losing my order history?",
+    "relevant_docs": ["billing-plans", "orders-export"],
+    "category": "billing",
+    "compound": true,
+    "note": "COMPOUND question (downgrade AND keep order history) — query decomposition splits it into two sub-queries"
+  },
+  {
+    "question": "Why was I charged twice for the same order?",
+    "relevant_docs": ["billing-duplicate-charge"],
+    "category": "billing"
+  },
+  {
+    "question": "I forgot my password and my account seems locked. How do I get back in?",
+    "relevant_docs": ["account-password-reset"],
+    "category": "account"
+  },
+  {
+    "question": "Where do I find the tracking number for an order that already shipped?",
+    "relevant_docs": ["shipping-tracking"],
+    "category": "shipping"
+  },
+  {
+    "question": "My webhook endpoint stopped receiving order.created events — how do retries and signature verification work?",
+    "relevant_docs": ["technical-webhooks"],
+    "category": "technical"
+  }
+]

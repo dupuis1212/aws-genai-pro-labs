@@ -1,0 +1,12 @@
+# CloudWatch Logs Insights — count FM API-integration errors by type (ThrottlingException &c).
+#
+# Run against /relay/bedrock/model-invocations. The runbook's diagnostic for "Throttling
+# bursts" (skill 5.2.2): a spike of ThrottlingException rows means you are hitting a model
+# quota — the remedy is the M3 exponential backoff + jitter (already in relay/llm.py) and/or a
+# quota increase, NOT a code rewrite. Grouping by errorCode shows which integration error is
+# spiking (throttling vs validation vs access-denied) so you diagnose the right one.
+
+fields @timestamp, errorCode, modelId
+| filter ispresent(errorCode)
+| stats count(*) as occurrences by errorCode, modelId
+| sort occurrences desc

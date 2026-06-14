@@ -1,0 +1,7 @@
+channel: chat
+ticket_id: raw-chat-002
+created_at: 2026-06-12T16:40:00Z
+
+hey, where is my order #2087? it said delivered 2026-06-09 but nothing
+arrived. tracking link is dead. can you check what happened and reship if
+it's lost? thanks

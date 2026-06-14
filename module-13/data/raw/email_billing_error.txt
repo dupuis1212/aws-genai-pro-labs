@@ -1,0 +1,50 @@
+channel: email
+ticket_id: raw-email-001
+created_at: 2026-06-12T14:03:00Z
+
+Hi CloudCart support,
+
+I tried to pay for my Pro plan renewal three times today and it keeps
+failing at checkout. I have no idea what is going on — the page just shows
+a red box and a code. I took a screenshot, see attached.
+
+My order reference is #1042 and the amount is $49.00. This started on
+2026-06-12. Could you tell me what is wrong and how to fix it? I need the
+plan active before the weekend.
+
+Thanks,
+Dana
+
+Dana Whitfield
+Operations Lead, Brightleaf Goods
+dana@brightleafgoods.example
++1 (555) 014-2231
+www.brightleafgoods.example
+--
+This email and any attachments are confidential and intended solely for
+the addressee. If you have received this email in error please notify the
+sender and delete it from your system. Brightleaf Goods Ltd. is a company
+registered in Delaware. Please consider the environment before printing.
+
+> On 2026-06-11, CloudCart Support <help@cloudcart.example> wrote:
+> Hi Dana,
+> Thanks for reaching out. Can you confirm the exact error code you see on
+> the checkout screen, and whether the charge appears on your card
+> statement? That helps us tell an issuer decline from a gateway timeout.
+> Best, The CloudCart Team
+>
+> > On 2026-06-11, Dana Whitfield <dana@brightleafgoods.example> wrote:
+> > Hello, my plan renewal will not go through. The checkout fails every
+> > time and I am worried my account will lapse. Please help as soon as
+> > you can — we rely on CloudCart for daily operations.
+> > Dana
+> >
+> > Dana Whitfield
+> > Operations Lead, Brightleaf Goods
+> > dana@brightleafgoods.example
+> > +1 (555) 014-2231
+> >
+> > > On 2026-06-10, CloudCart Support <help@cloudcart.example> wrote:
+> > > Hi Dana, your support request has been received. A team member will
+> > > reply within one business day. Ticket reference: CC-88231.
+> > > Best, The CloudCart Team

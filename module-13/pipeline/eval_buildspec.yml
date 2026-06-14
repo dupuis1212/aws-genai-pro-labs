@@ -1,0 +1,33 @@
+# pipeline/eval_buildspec.yml — the CodeBuild EVAL-GATE stage for Relay's pipeline (Module 13).
+#
+# Runs AFTER smoke, against the DEPLOYED build: the golden-set evals + the REGRESSION GATE.
+# The smoke stage proves the API still WORKS; this stage proves Relay is still GOOD. A
+# grounding regression (aggregate grounding < 0.8 = config.EVAL_GROUNDING_FLOOR, the SAME 0.8
+# the M9 escalation + M14 alarm use, OR a >5-pt drop vs the committed baseline) makes
+# evals/run_evals.py exit non-zero, FAILS this CodeBuild stage, and BLOCKS promotion — so a
+# quality regression never reaches a customer even when the API is healthy (skills 5.1.4/5.1.9).
+#
+# The committed baseline (evals/results/run-baseline.json) travels in the repo, so the gate
+# always has something to compare against. The default run uses the committed OFFLINE fixture
+# (deterministic, no tokens) so the PIPELINE gate is fast and free; flip to `--live` to score
+# the real deployed answers (spends tokens, needs Bedrock access on the CodeBuild role).
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - pip install uv
+      - uv sync --frozen
+  build:
+    commands:
+      - echo "Running the golden-set eval + the regression gate (Module 13)."
+      # The eval-gate run + the gate. A grounding regression exits non-zero and FAILS the
+      # stage (CodePipeline stops promotion). Offline by default (committed fixture, no
+      # tokens); for a live gate against the deployed answers, swap --fixture for --live.
+      - >
+        uv run python evals/run_evals.py
+        --fixture data/eval_fixtures/baseline_fixture.json
+        --out evals/results/run-pipeline.json
+        --gate --baseline evals/results/run-baseline.json

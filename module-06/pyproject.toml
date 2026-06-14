@@ -1,0 +1,60 @@
+[project]
+name = "aws-genai-pro-labs-module-06"
+version = "0.6.0"
+description = "Module 6 of AWS GenAI Pro Mastery — data pipelines for FMs: an intake pipeline (relay.intake) that validates, normalizes, runs Amazon Comprehend entity extraction, and reads error screenshots with the Amazon Nova Lite vision model via the Converse API, producing a clean validated Ticket — on top of the Module 5 managed Knowledge Base."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers everything Module 6 needs on top of Module 5 — managed RAG plus
+    # the new intake pipeline are entirely boto3 + the inherited Pydantic schemas:
+    #   bedrock-runtime  : Converse, now with multimodal IMAGE content blocks (the
+    #                      Nova Lite vision read of a screenshot);
+    #   comprehend       : detect_entities / detect_dominant_language (entity
+    #                      extraction; NOT a Bedrock FM);
+    #   s3               : put_object to the attachments/ prefix;
+    #   plus the inherited s3vectors / sts / iam / bedrock-agent(-runtime) (KB).
+    # Module 6 adds NO new runtime dependency.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock/AWS calls. Budget = up to SIX:
+# Modules 2/3 contribute two (one fast ConverseStream + one smart Converse);
+# Module 4 contributes two Titan embeddings calls; Module 5 contributes ONE
+# RetrieveAndGenerate; Module 6 contributes ONE Nova Lite vision Converse call on
+# the bundled screenshot. All are skipped unless RELAY_LIVE_TESTS=1 — see
+# tests/smoke_test.py for the documented call budget. No live KB creation / ingestion
+# and no S3 upload from the tests.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3 (the attachments/ upload + the teardown purge), STS, IAM, the
+    # S3 Vectors lifecycle, and the bedrock-agent KB control plane so the smoke test
+    # runs offline with no credentials. The data planes moto does not implement —
+    # Comprehend detect_entities, the Converse vision call, and Retrieve /
+    # RetrieveAndGenerate — are driven by botocore Stubbers in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 6 ships the cumulative relay/ package (now with relay/intake.py), the
+# inherited ingest/ pipeline, and the lab scripts.
+packages = ["relay", "ingest"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "setup.py",
+    "teardown.py",
+]

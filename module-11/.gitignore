@@ -1,0 +1,43 @@
+# Per-account state written by setup.py: the Bedrock Prompt Management prompt ID.
+# Account-specific and recreated on every `uv run python setup.py`, so it must
+# not be committed. triage.py reads it (or the RELAY_TRIAGE_PROMPT_ID env var).
+prompts/.prompt_id
+
+# Module 5: the Knowledge Base id + data-source id setup.py records so kb.py,
+# compare_retrieval.py, and freshness_test.py find the KB without an env var.
+# Account-specific and recreated on every `uv run python setup.py` (or settable
+# via RELAY_KB_ID); never committed.
+.kb_id
+.kb_data_source_id
+
+# Module 7: the deployed CloudCart MCP server's Function URL that setup.py records so
+# relay/tools.py can build an MCP client. Account/deploy-specific and recreated on every
+# `uv run python setup.py` (or settable via RELAY_MCP_URL); never committed.
+.mcp_url
+
+# Module 8: the AgentCore Memory id setup.py records (relay/run.py reads it, or the
+# RELAY_MEMORY_ID env var) and the AgentCore Runtime ARN the `agentcore` CLI prints
+# (recorded via `setup.py --record-runtime <arn>`). Both are account/deploy-specific and
+# recreated on every setup / deploy; never committed.
+.memory_id
+.runtime_arn
+
+# Module 9: the Bedrock Guardrail id + published version setup.py records so relay/safety.py,
+# relay/llm.py, and run_attacks.py resolve `relay-guardrail` without an env var (or settable
+# via RELAY_GUARDRAIL_ID / RELAY_GUARDRAIL_VERSION). Account/deploy-specific and recreated on
+# every `uv run python setup.py`; never committed.
+.guardrail_id
+.guardrail_version
+
+# Module 10: the agent's structured DECISION LOG — runtime output appended on every handled
+# ticket (audit_report.py reads it). Even though inputs are REDACTED before writing, it is
+# operational data, not source — never committed.
+decision_log.jsonl
+
+# Module 11: the AWS CDK synth output (cloud assembly) the `cdk` CLI writes under cdk/.
+# Account/deploy-specific build artifacts regenerated on every `cdk synth`/`cdk deploy` —
+# never committed. The queue URL is resolved at call time (RELAY_QUEUE_URL env var, set by
+# the CDK stack on the Lambdas, or GetQueueUrl), so there is no marker file to ignore.
+cdk/cdk.out/
+cdk.out/
+cdk.context.json

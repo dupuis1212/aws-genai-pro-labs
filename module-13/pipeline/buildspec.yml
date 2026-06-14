@@ -1,0 +1,28 @@
+# pipeline/buildspec.yml — the CodeBuild BUILD stage for Relay's pipeline (Module 11).
+#
+# The pipeline's first gate: install deps, run the OFFLINE smoke tests (moto/Stubber — no
+# AWS calls, no cost), and run a security scan. A failure here STOPS the pipeline before any
+# deploy, so a commit that breaks the contract never ships (skill 2.3.5). The smoke tests
+# are the SAME tests/smoke_test.py the lab runs locally — one source of truth.
+#
+# Security scan: `pip-audit` over the locked dependencies (a cheap, deterministic CVE scan
+# in the build, the brief's "security scans in the build" line). Swap in your org's scanner
+# (Inspector, Snyk, ...) — the POINT is a scan gate in CI, not a specific tool.
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    commands:
+      - pip install uv
+      - uv sync --frozen
+  pre_build:
+    commands:
+      # SECURITY SCAN — fail the build on a known-vulnerable locked dependency.
+      - uv run --with pip-audit pip-audit || (echo "pip-audit found issues" && exit 1)
+  build:
+    commands:
+      # OFFLINE unit + smoke tests (moto / botocore Stubber — no AWS calls). These gate the
+      # deploy: a red test here means the pipeline never promotes the change.
+      - uv run pytest tests/smoke_test.py -q

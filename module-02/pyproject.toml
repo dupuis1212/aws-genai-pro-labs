@@ -1,0 +1,33 @@
+[project]
+name = "aws-genai-pro-labs-module-02"
+version = "0.2.0"
+description = "Module 2 of AWS GenAI Pro Mastery — Relay's triage: prompt engineering, structured output, and Bedrock Prompt Management."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "boto3~=1.43",
+    "pydantic~=2.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the one test that makes a REAL Bedrock Converse call (costs a
+# fraction of a cent). It is skipped unless RELAY_LIVE_TESTS=1 — see
+# tests/smoke_test.py for the documented per-call budget.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 2 introduces the relay/ package. Ship it plus the lab scripts.
+packages = ["relay"]
+include = ["run_prompt_tests.py", "setup.py", "teardown.py"]

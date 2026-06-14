@@ -1,0 +1,23 @@
+channel: email
+ticket_id: raw-email-003
+created_at: 2026-06-12T11:22:00Z
+
+<div dir="ltr">
+<p>Hello,</p>
+<p>I cannot reset my password. The reset email never arrives, even after
+several tries, and I checked my spam folder. My account email is
+sam@northwind.example and the last successful login was on 2026-05-30.
+Can you trigger a manual reset or tell me what to do?</p>
+<p>Regards,<br>Sam</p>
+</div>
+
+Sam Ortega
+Account Administrator
+sam@northwind.example
+Sent from my phone
+
+On Thu, 2026-06-12 at 10:05, CloudCart Support <help@cloudcart.example>
+wrote:
+> Hi Sam, password resets are handled under Settings -> Security. If the
+> email does not arrive, reply here and we will reset it manually.
+> Best, The CloudCart Team

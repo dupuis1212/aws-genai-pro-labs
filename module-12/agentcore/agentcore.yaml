@@ -1,0 +1,50 @@
+# agentcore/agentcore.yaml — Bedrock AgentCore Runtime deploy config for Relay.
+#
+# Consumed by the standalone `agentcore` CLI (github.com/aws/agentcore-cli) — the
+# current GA tooling, not any legacy pre-GA helper. It describes HOW to package and
+# deploy the Relay agent (relay/run.py) onto AgentCore Runtime. Names match
+# relay/config.py so the CLI, setup.py, and teardown.py agree by construction.
+#
+# Re-verify the exact field names against `agentcore configure --help` on the day you
+# run — the CLI is GA but evolving; this file documents the intent.
+
+# The logical runtime name (config.AGENTCORE_RUNTIME_NAME). The deployed agent is
+# invoked by this name; the CLI owns the actual runtime ARN.
+name: relay-agent
+
+# The entrypoint AgentCore Runtime invokes in the microVM: build_app() in relay/run.py
+# returns the BedrockAgentCoreApp whose @app.entrypoint adapts the runtime payload to
+# the frozen run_relay() contract.
+entrypoint: relay.run
+
+# us-east-1 everywhere (course decision B8).
+region: us-east-1
+
+# The Python runtime the microVM runs (matches the course pin, Python 3.12).
+runtime: python3.12
+
+# AgentCore Memory: short-term (session events) + long-term (cross-session records).
+# setup.py creates the store named below over the bedrock-agentcore-control plane and
+# records its id in .memory_id; the runtime reads it via config.resolve_memory_id().
+memory:
+  name: relay-memory
+  # The long-term store is the ONLY idle-billed item in the lab (~$0.75/1K records/mo
+  # as of June 2026) -> purged at teardown. Retention is kept short to keep cost ~$0.
+  long_term_expiry_days: 30
+
+# Environment the deployed agent needs. The MCP server URL and the KB id are resolved
+# at runtime from their marker files / env (config.resolve_mcp_url / kb.resolve_kb_id);
+# the Memory id is injected by the CLI from the created store.
+environment:
+  RELAY_REGION: us-east-1
+
+# Networking: AgentCore Runtime manages the microVM and its egress to Bedrock, DynamoDB
+# (the MCP tools), and the Knowledge Base. No public ingress here — invocation is via
+# the AgentCore Runtime API (`agentcore invoke`) and, in Module 11, the worker Lambda.
+networking:
+  mode: managed
+
+# Observability is wired in Module 14 (AgentCore Observability + a CloudWatch dashboard)
+# — left off here on purpose (1-line forward reference, no build).
+observability:
+  enabled: false

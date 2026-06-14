@@ -1,0 +1,85 @@
+[project]
+name = "aws-genai-pro-labs-module-08"
+version = "0.8.0"
+description = "Module 8 of AWS GenAI Pro Mastery — multi-agent systems and Bedrock AgentCore: Relay (the M7 Strands agent) is deployed on AgentCore Runtime via the agentcore CLI with AgentCore Memory (short + long term), hands off billing/refund tickets to a Billing specialist, and gates the sensitive refund action behind a human-in-the-loop approval (AgentAction.approved becomes effective, the TicketRecord status awaiting_approval is exercised) — on top of the M7 agent + MCP server + DynamoDB tables and the M5 Knowledge Base."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers the inherited layers (Converse, Comprehend, S3, S3 Vectors, the KB
+    # control/runtime planes) AND the Module 7 agent additions:
+    #   dynamodb        : relay-orders (lookup_order) + relay-tickets (create_ticket /
+    #                     the persisted TicketRecord);
+    #   lambda / iam    : deploy + invoke the stateless CloudCart MCP server on AWS
+    #                     Lambda and its IAM-bounded execution role (skill 2.1.3).
+    # NEW runtime dependencies in Module 7 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — strands moves fast, so this is pinned and the lock is committed):
+    #   strands-agents  : the Strands Agents SDK — the code-first, model-driven ReAct
+    #                     agent loop, @tool definitions, and the MCP client. Latest
+    #                     1.43.0 -> pinned ~=1.43 (re-verify each agent module M7/M8).
+    #   mcp             : the official Model Context Protocol SDK — the stateless MCP
+    #                     server (FastMCP) the Lambda hosts + the client the agent uses.
+    #                     Latest 1.27.2 -> pinned ~=1.27. MCP spec revision 2025-06-18.
+    # NEW runtime dependency in Module 8 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — Bedrock AgentCore is GA since 13 Oct 2025):
+    #   bedrock-agentcore : the AgentCore Runtime SDK. It provides BedrockAgentCoreApp —
+    #                     the @app.entrypoint wrapper that turns relay/run.py into the
+    #                     HTTP contract AgentCore Runtime invokes (one JSON payload in,
+    #                     one JSON response out). Latest 1.14.1 -> pinned ~=1.14. The
+    #                     DEPLOYMENT tool is the standalone `agentcore` CLI (installed
+    #                     outside these Python deps, like the AWS CLI) — NEVER the legacy
+    #                     bedrock-agentcore-starter-toolkit. AgentCore Memory is created
+    #                     by setup.py over the bedrock-agentcore-control plane in boto3.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+    "strands-agents~=1.43",
+    "mcp~=1.27",
+    "bedrock-agentcore~=1.14",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock/AWS calls. Budget = up to EIGHT:
+# Modules 2/3 contribute two (one fast ConverseStream + one smart Converse); Module 4
+# contributes two Titan embeddings calls; Module 5 contributes ONE RetrieveAndGenerate;
+# Module 6 contributes ONE Nova Lite vision Converse call on the bundled screenshot;
+# Module 7 contributes ONE full Strands agent run (a smart-tier ReAct loop — a few
+# model calls inside one capped run, < $0.02); Module 8 contributes ONE handoff run
+# (the Billing specialist proposes a refund, ticket parks in awaiting_approval — a few
+# smart-tier calls, < $0.02; no AgentCore Runtime/long-term-Memory cost). All are
+# skipped unless RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented call
+# budget. No live KB / Lambda / table / AgentCore Memory creation, no S3 upload.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3 (the attachments/ upload + the teardown purge), STS, IAM, the
+    # S3 Vectors lifecycle, and the bedrock-agent KB control plane so the smoke test
+    # runs offline with no credentials. The data planes moto does not implement —
+    # Comprehend detect_entities, the Converse vision call, and Retrieve /
+    # RetrieveAndGenerate — are driven by botocore Stubbers in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 8 ships the cumulative relay/ package (now with relay/specialists.py — the
+# Billing specialist — relay/approve.py — the HITL refund gate — and relay/run.py —
+# the AgentCore Runtime entrypoint — on top of the M7 agent.py/tools.py), the
+# inherited ingest/ pipeline, the mcp_server/ package the Lambda hosts, and the lab
+# scripts. The agentcore/ directory carries the agentcore-CLI deploy config, not a
+# Python package.
+packages = ["relay", "ingest", "mcp_server"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "setup.py",
+    "teardown.py",
+]

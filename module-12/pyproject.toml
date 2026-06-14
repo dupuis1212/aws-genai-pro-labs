@@ -1,0 +1,137 @@
+[project]
+name = "aws-genai-pro-labs-module-12"
+version = "0.12.0"
+description = "Module 12 of AWS GenAI Pro Mastery — the token economy: cost & performance optimization for GenAI. Relay's $/ticket stops being a black box: TicketRecord.cost_cents (the M7 placeholder field) is finally POPULATED from the M3 per-tier price map, summed across every converse() call in a ticket via a per-ticket CostMeter in relay.llm. Then four levers attack the cost — prompt caching on the system prefix (converse(..., cache_prompt=True), ~-90% on the cached input), a SEMANTIC CACHE (relay/cache.py: Titan V2 embeddings + a DynamoDB on-demand table relay-cache, a strict similarity threshold + TTL — never a blind cache), batch inference (-50%, asynchronous, eval-backfill ONLY), and the Flex service tier (-50%, latency-tolerant, eval/backfill ONLY — never interactive). cost_report.py prints the before/after $/ticket AND p95 table (the graded deliverable). All BY ADDITION: converse()'s signature is byte-identical, the M3 tier map / Titan embedder / frozen schemas are untouched (cost_cents already existed since M7) — on top of the full M2-M11 cumulative Relay (front door, agent, KB, guardrail, PII/IAM)."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers the inherited layers (Converse, Comprehend, S3, S3 Vectors, the KB
+    # control/runtime planes) AND the Module 7 agent additions:
+    #   dynamodb        : relay-orders (lookup_order) + relay-tickets (create_ticket /
+    #                     the persisted TicketRecord);
+    #   lambda / iam    : deploy + invoke the stateless CloudCart MCP server on AWS
+    #                     Lambda and its IAM-bounded execution role (skill 2.1.3).
+    # NEW runtime dependencies in Module 7 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — strands moves fast, so this is pinned and the lock is committed):
+    #   strands-agents  : the Strands Agents SDK — the code-first, model-driven ReAct
+    #                     agent loop, @tool definitions, and the MCP client. Latest
+    #                     1.43.0 -> pinned ~=1.43 (re-verify each agent module M7/M8).
+    #   mcp             : the official Model Context Protocol SDK — the stateless MCP
+    #                     server (FastMCP) the Lambda hosts + the client the agent uses.
+    #                     Latest 1.27.2 -> pinned ~=1.27. MCP spec revision 2025-06-18.
+    # NEW runtime dependency in Module 8 (re-verified on PyPI on generation day,
+    # 13 Jun 2026 — Bedrock AgentCore is GA since 13 Oct 2025):
+    #   bedrock-agentcore : the AgentCore Runtime SDK. It provides BedrockAgentCoreApp —
+    #                     the @app.entrypoint wrapper that turns relay/run.py into the
+    #                     HTTP contract AgentCore Runtime invokes (one JSON payload in,
+    #                     one JSON response out). Latest 1.14.1 -> pinned ~=1.14. The
+    #                     DEPLOYMENT tool is the standalone `agentcore` CLI (installed
+    #                     outside these Python deps, like the AWS CLI) — NEVER the legacy
+    #                     bedrock-agentcore-starter-toolkit. AgentCore Memory is created
+    #                     by setup.py over the bedrock-agentcore-control plane in boto3.
+    # Module 9 (safety engineering) adds NO new runtime dependency: Bedrock Guardrails is
+    # GA (June 2026) and is reached through the EXISTING boto3 — the `bedrock` CONTROL
+    # plane (CreateGuardrail / CreateGuardrailVersion / DeleteGuardrail in setup/teardown)
+    # and the `bedrock-runtime` plane (ApplyGuardrail in relay/safety.py; the in-line
+    # guardrailConfig on Converse in relay/llm.py). No NeMo Guardrails, no third-party
+    # moderation library — that is the AWS-native path the course teaches.
+    # Module 10 (security/privacy/governance) adds NO new runtime dependency: PII detection
+    # is Amazon Comprehend (DetectPiiEntities) over the existing boto3; IAM / CloudTrail too.
+    # NEW runtime dependencies in Module 11 (re-verified on PyPI on generation day,
+    # 14 Jun 2026 — decision B6 moves the M11+ infra to AWS CDK v2):
+    #   aws-cdk-lib   : the AWS CDK v2 construct library — the DECLARATIVE infra for the
+    #                   front door (cdk/relay_cdk/api_stack.py: API Gateway + the four
+    #                   Lambda handlers + SQS + the relay-events bus) and the CI/CD pipeline
+    #                   (cdk/relay_cdk/pipeline_stack.py: CodePipeline build->smoke->deploy
+    #                   ->rollback). Latest 2.259.0 -> pinned ~=2.259. The `cdk` CLI is
+    #                   installed outside these Python deps (npm install -g aws-cdk), like
+    #                   the AWS CLI. The handlers (relay/api/) need only boto3 at runtime;
+    #                   aws-cdk-lib is a SYNTH-time dep (it imports lazily inside the stack
+    #                   builders so the offline smoke test runs without it on the path).
+    #   constructs    : the CDK construct base library aws-cdk-lib builds on. Latest 10.6.0
+    #                   -> pinned ~=10.0 (the v2 line).
+    # Module 12 (the token economy) adds NO new runtime dependency: prompt caching + the Flex
+    # service tier ride through the EXISTING relay.llm.converse() **params (a Converse cache
+    # point + a performanceConfig block — same boto3 bedrock-runtime); the SEMANTIC CACHE
+    # (relay/cache.py) is a DynamoDB on-demand table over the existing boto3, embedded with
+    # the PINNED Titan V2 path from Module 4 (ingest.embed — never a swap); batch inference is
+    # the existing bedrock-runtime CreateModelInvocationJob. cost_cents is summed in-process by
+    # relay.llm.CostMeter (no new lib). No semantic-cache SaaS, no vector-DB client beyond the
+    # course's S3 Vectors — the AWS-native, dependency-free path the course teaches.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+    "strands-agents~=1.43",
+    "mcp~=1.27",
+    "bedrock-agentcore~=1.14",
+    "aws-cdk-lib~=2.259",
+    "constructs~=10.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock/AWS calls. Budget = up to TEN:
+# Modules 2/3 contribute two (one fast ConverseStream + one smart Converse); Module 4
+# contributes two Titan embeddings calls; Module 5 contributes ONE RetrieveAndGenerate;
+# Module 6 contributes ONE Nova Lite vision Converse call on the bundled screenshot;
+# Module 7 contributes ONE full Strands agent run (a smart-tier ReAct loop — a few
+# model calls inside one capped run, < $0.02); Module 8 contributes ONE handoff run
+# (the Billing specialist proposes a refund, ticket parks in awaiting_approval — a few
+# smart-tier calls, < $0.02; no AgentCore Runtime/long-term-Memory cost); Module 9
+# contributes TWO standalone ApplyGuardrail calls (one attack -> BLOCKED, one legitimate
+# ticket -> passed — a couple of text units, well under a cent), skipping cleanly if the
+# guardrail is not set up. Module 11 contributes ONE capped end-to-end round-trip — a real
+# POST /tickets -> poll GET against the DEPLOYED API (the worker runs ONE smart-tier agent
+# loop, < $0.02 as of June 2026) — skipping cleanly if RELAY_API_URL is not set. Module 12
+# contributes THREE capped fast-tier Converse calls (Nova Micro, with prompt caching on) to
+# prove the CostMeter sums real usage > 0 — well under a cent, no table/cache/batch creation
+# in the test (the cache table + batch job are stood up by setup.py, not a test). All are
+# skipped unless RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented call budget
+# (well under $0.10 total as of June 2026). No live KB / Lambda / table / Memory / guardrail
+# creation in the tests, no S3 upload (the deployed stack is stood up by `cdk deploy`, not
+# by a test). NOTE: caching REDUCES the lab's net live cost — a repeated question hits the
+# semantic cache (cost ~ 0) and a reused prompt prefix bills at ~10%.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+# Keep `uv run pytest` collecting ONLY the lab's own tests. `cdk synth`/`cdk deploy`
+# writes a `cdk.out/asset.*/` staging tree (the bundled Lambda deps carry their OWN
+# test files); without this a bare `uv run pytest` after a synth tries to collect them
+# and errors. The pipeline runs `pytest tests/smoke_test.py` explicitly; this makes the
+# local default just as robust.
+testpaths = ["tests"]
+norecursedirs = ["cdk.out", "cdk/cdk.out", ".venv", "node_modules", "*.egg-info"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3 (the attachments/ upload + the teardown purge), STS, IAM, the
+    # S3 Vectors lifecycle, and the bedrock-agent KB control plane so the smoke test
+    # runs offline with no credentials. The data planes moto does not implement —
+    # Comprehend detect_entities, the Converse vision call, and Retrieve /
+    # RetrieveAndGenerate — are driven by botocore Stubbers in the test.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 12 ships the cumulative relay/ package — now with the NEW relay/cache.py (the
+# semantic cache) alongside the M11 relay/api/ front-door subpackage, WRAPPING the unchanged
+# M2-M11 modules — plus the inherited ingest/ pipeline, the mcp_server/ package the Lambda
+# hosts, and the cdk/ app (the AWS CDK stacks: api + pipeline). The lab scripts carry over,
+# now including cost_report.py (the M12 before/after $/ticket + p95 deliverable).
+# agentcore/ carries the agentcore-CLI deploy config, not a Python package.
+packages = ["relay", "ingest", "mcp_server", "cdk"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "run_attacks.py",
+    "cost_report.py",
+    "setup.py",
+    "teardown.py",
+    "pipeline/smoke_test_live.py",
+]

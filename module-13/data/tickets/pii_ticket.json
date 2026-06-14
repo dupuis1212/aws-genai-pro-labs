@@ -1,0 +1,6 @@
+{
+  "ticket_id": "pii-demo-001",
+  "channel": "email",
+  "customer_message": "Hi support team,\n\nMy name is Dana Quill and my order #1042 still hasn't arrived. It was supposed to be here on 2026-06-10. Can you check on it and email me an update at dana.quill@example.com? You can also reach me at +1 (555) 010-7788.\n\nThanks,\nDana Quill\nDana Quill | CloudCart Pro customer\n+1 (555) 010-7788",
+  "created_at": "2026-06-12T14:30:00Z"
+}

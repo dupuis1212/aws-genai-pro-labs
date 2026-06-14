@@ -1,0 +1,17 @@
+# CloudWatch Logs Insights — explore the last invocations: tokens, latency, model, prompt size.
+#
+# Run against the Bedrock model-invocation log group: /relay/bedrock/model-invocations
+# (set by observability/setup_observability.py). This is the brief's "explore 3 invocations"
+# query (step 2) AND the first diagnostic for the context-overflow fault: the inputTokenCount
+# is the prompt size — a row far above the rest is the overflowing call.
+#
+# Model Invocation Logs are NOT CloudTrail: these carry the request/response payload + token
+# usage; CloudTrail would carry the bedrock:Converse API call, not its content.
+
+fields @timestamp,
+       modelId,
+       input.inputTokenCount  as input_tokens,
+       output.outputTokenCount as output_tokens,
+       (input.inputTokenCount + output.outputTokenCount) as total_tokens
+| sort @timestamp desc
+| limit 20

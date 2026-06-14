@@ -1,0 +1,14 @@
+# CloudWatch Logs Insights — find the LARGEST prompts (context-window-overflow diagnosis).
+#
+# Run against /relay/bedrock/model-invocations. The context-overflow fault (a giant pasted
+# log in a ticket) shows up here as an inputTokenCount orders of magnitude above the median.
+# This is the runbook's diagnostic for "Truncated answers / context-window overflow" (skill
+# 5.2.1): the remedy is dynamic chunking / truncation of the offending input, NOT an infra
+# change. Sorting by input size surfaces the offender immediately.
+
+fields @timestamp,
+       modelId,
+       input.inputTokenCount as input_tokens,
+       errorCode
+| sort input_tokens desc
+| limit 20

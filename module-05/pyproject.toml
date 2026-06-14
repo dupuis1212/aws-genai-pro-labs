@@ -1,0 +1,56 @@
+[project]
+name = "aws-genai-pro-labs-module-05"
+version = "0.5.0"
+description = "Module 5 of AWS GenAI Pro Mastery — managed RAG: a Bedrock Knowledge Base (relay-kb) over the CloudCart docs on Amazon S3 Vectors, with hybrid search, a Bedrock reranker, query decomposition, cited grounded answers, and a freshness re-sync test."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # boto3 covers everything Module 5 needs on top of Module 4: the same
+    # bedrock-runtime (Converse + the sole Titan invoke_model), s3, s3vectors, and
+    # sts, PLUS bedrock-agent (the Knowledge Base CONTROL plane — create KB / data
+    # source / ingestion job), bedrock-agent-runtime (Retrieve / RetrieveAndGenerate
+    # / rerank), and iam (the KB service role). Module 5 adds NO new runtime
+    # dependency — managed RAG is entirely boto3 + the inherited Pydantic schemas.
+    "boto3~=1.43",
+    "pydantic~=2.0",
+]
+
+[tool.pytest.ini_options]
+# 'live' marks the tests that make REAL Bedrock calls. Modules 2/3 contribute two
+# (one fast ConverseStream + one smart Converse); Module 4 contributes two Titan
+# embeddings calls; Module 5 contributes ONE RetrieveAndGenerate call. All are
+# skipped unless RELAY_LIVE_TESTS=1 — see tests/smoke_test.py for the documented
+# call budget. No live KB creation or ingestion from the tests.
+markers = [
+    "live: makes a real AWS Bedrock call (needs creds + RELAY_LIVE_TESTS=1)",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    # moto~=5 mocks S3, STS, IAM, the S3 Vectors lifecycle, and the bedrock-agent
+    # KB control plane so the smoke test runs offline with no credentials. The
+    # Retrieve / RetrieveAndGenerate data plane (which moto does not implement) is
+    # driven by a botocore Stubber in the test, exactly as Module 4 did for the
+    # S3 Vectors kNN query.
+    "moto~=5.0",
+    "pytest~=8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+# Module 5 ships the cumulative relay/ package (now with relay/kb.py), the
+# inherited ingest/ pipeline, and the lab scripts (the Module 4 ones plus the new
+# compare_retrieval.py / freshness_test.py).
+packages = ["relay", "ingest"]
+include = [
+    "run_prompt_tests.py",
+    "demo_llm.py",
+    "compare_chunking.py",
+    "compare_retrieval.py",
+    "freshness_test.py",
+    "setup.py",
+    "teardown.py",
+]

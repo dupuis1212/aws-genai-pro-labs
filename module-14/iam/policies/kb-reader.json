@@ -1,0 +1,38 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "Least-privilege policy for the Relay KNOWLEDGE-BASE READER component — Module 10, skill 3.2.1. This is the read-only retrieval identity used to query the relay-kb Knowledge Base (Retrieve / RetrieveAndGenerate) and the Cohere reranker the answer path uses. It can ONLY retrieve from relay-kb and read the docs/ corpus it is built on — it cannot write the index, change the KB, or touch the agent's tables. Separating it from the agent role lets a read-only reporting/eval caller query the KB without the agent's table write grants. ${ACCOUNT_ID}/${REGION} substituted by setup.py from STS.",
+  "Statement": [
+    {
+      "Sid": "RetrieveOnly",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:Retrieve",
+        "bedrock:RetrieveAndGenerate"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/relay-kb"
+      ]
+    },
+    {
+      "Sid": "RerankAndEmbedForRetrieval",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}::foundation-model/cohere.rerank-v3-5:0",
+        "arn:aws:bedrock:${REGION}::foundation-model/amazon.titan-embed-text-v2:0"
+      ]
+    },
+    {
+      "Sid": "ReadDocsCorpusOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::relay-${ACCOUNT_ID}/docs/*"
+      ]
+    }
+  ]
+}

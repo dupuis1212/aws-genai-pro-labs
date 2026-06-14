@@ -1,0 +1,67 @@
+{
+  "Version": "2012-10-17",
+  "Comment": "Least-privilege policy for the Relay AGENT component (relay.agent + its tools) — Module 10, skill 3.2.1. The Strands agent reasons on the smart/fast inference profiles through converse(), applies the relay-guardrail in-line and standalone (relay.safety), reads order status from relay-orders, writes a TicketRecord to relay-tickets, and runs the search_kb tool against the relay-kb Knowledge Base. Every action and resource is explicit: the two table ARNs (read-only on orders, write on tickets — the exact M7 boundary), the named guardrail ARN, the named Knowledge Base ARN, and the inference profiles it is allowed to call. No '*', no admin, no S3. ${ACCOUNT_ID}/${REGION} substituted by setup.py from STS.",
+  "Statement": [
+    {
+      "Sid": "ReasonOnAllowedInferenceProfiles",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream",
+        "bedrock:Converse",
+        "bedrock:ConverseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:inference-profile/us.amazon.nova-2-lite-v1:0",
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:inference-profile/us.amazon.nova-micro-v1:0",
+        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-2-lite-v1:0",
+        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-micro-v1:0"
+      ]
+    },
+    {
+      "Sid": "ApplyTheNamedGuardrail",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:ApplyGuardrail"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:guardrail/relay-guardrail"
+      ]
+    },
+    {
+      "Sid": "ReadOrdersOnly",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:Query",
+        "dynamodb:BatchGetItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:${REGION}:${ACCOUNT_ID}:table/relay-orders"
+      ]
+    },
+    {
+      "Sid": "WriteTicketsOnly",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem",
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:${REGION}:${ACCOUNT_ID}:table/relay-tickets"
+      ]
+    },
+    {
+      "Sid": "RetrieveFromTheNamedKnowledgeBase",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:Retrieve",
+        "bedrock:RetrieveAndGenerate"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/relay-kb"
+      ]
+    }
+  ]
+}

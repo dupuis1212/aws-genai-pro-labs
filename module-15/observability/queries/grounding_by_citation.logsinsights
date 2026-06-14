@@ -1,0 +1,14 @@
+# CloudWatch Logs Insights — which source docs is Relay citing? (retrieval-drift diagnosis).
+#
+# Run against Relay's worker EMF log group (the structured ticket lines the worker emits via
+# observability/metrics.emit_emf — namespace Relay/Ops). The kb-corruption fault makes Relay
+# cite a doc that now contains a falsehood; this query surfaces the cited source_uri per
+# ticket so you can see the corrupted doc ("billing-duplicate-charge") dominating the
+# citations while the EvalGrounding metric falls. This is the runbook's diagnostic for "Vague
+# answers / grounding drop (retrieval drift)" (skill 5.2.4): the remedy is to restore the doc
+# and re-sync the KB, NOT to touch the model.
+
+fields @timestamp, ticket_id, status, cited_source
+| filter ispresent(cited_source)
+| stats count(*) as citations by cited_source
+| sort citations desc
