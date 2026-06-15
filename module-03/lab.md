@@ -167,7 +167,7 @@ response (streaming):
 I'm sorry for the double charge. Here's what I'd check on order #1042: ...
 [streams token by token]
 
-tokens: in=78 out=126 | tier=smart | est. cost: $0.000339
+tokens: in=78 out=126 | tier=smart | est. cost: $0.000338
 ```
 
 And the fast path, no streaming:

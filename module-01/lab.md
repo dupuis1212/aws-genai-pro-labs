@@ -38,8 +38,12 @@ Everyone else: continue.
 
 Use a course-only IAM user or role, never the root user, and never a hardcoded
 key. The policy this lab needs is in [`iam/course-policy.json`](iam/course-policy.json):
-it grants only `bedrock:Converse*`/`InvokeModel*` on Nova + Claude profiles,
-AWS Budgets, SNS for notifications, and `sts:GetCallerIdentity`. Attach it:
+it grants only `bedrock:Converse`, `ConverseStream`, `InvokeModel`, and
+`InvokeModelWithResponseStream` on Nova + Claude profiles, the Bedrock catalog
+reads, AWS Budgets, SNS for notifications, and `sts:GetCallerIdentity` (each
+statement's rationale is in [`iam/course-policy.md`](iam/course-policy.md)). The
+JSON carries no comments on purpose — IAM rejects any unrecognized key, so an
+`aws iam create-policy` with a `Comment` field would fail. Attach it:
 
 ```bash
 aws iam create-policy \
@@ -106,10 +110,14 @@ inference profile"; the script catches exactly that and tells you how to fix it.
 
 ## Step 5 — Play with inference parameters
 
-Edit `inferenceConfig` in `hello_bedrock.py` and re-run the same question:
+Set `RELAY_TEMPERATURE` and re-run the same question — no need to edit the file
+(the offline test pins the default `0.2`, so an in-place edit would make
+`uv run pytest` fail on the asserted request shape):
 
-- `"temperature": 0.0` — deterministic, near-identical answers every run.
-- `"temperature": 0.9` — more varied phrasing, occasional tangents.
+```bash
+RELAY_TEMPERATURE=0.0 uv run python hello_bedrock.py   # deterministic, near-identical answers
+RELAY_TEMPERATURE=0.9 uv run python hello_bedrock.py   # more varied phrasing, occasional tangents
+```
 
 Watch the token counts and the cost line move with the answer length.
 

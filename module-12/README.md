@@ -20,17 +20,17 @@ uv run python cost_report.py --offline  # the same table shape, no AWS, no cost
 ================================================================
   Relay cost & latency — before / after (Module 12)
 ================================================================
-  reference tickets : 11
+  reference tickets : 10
   semantic-cache hits (optimized) : 1
 
   metric                      baseline     optimized       delta
   ------------------------------------------------------------
-  $/ticket (cents)              0.0546        0.0011     -97.9% down
-  total cost (cents)            0.6006        0.0123     -97.9% down
-  p95 latency (ms)             18.07         10.30        -43.0% down
+  $/ticket (cents)              0.0546        0.0011     -98.0% down
+  total cost (cents)            0.5460        0.0112     -98.0% down
+  p95 latency (ms)             15.0457        5.2901     -64.8% down
 
   Flex/batch on the EVAL path (latency-tolerant, never interactive):
-    same volume as a batch backfill -> 0.3003c (-50% vs 0.6006c)
+    same volume as a batch backfill -> 0.2730c (-50% vs 0.5460c)
 ================================================================
 ```
 

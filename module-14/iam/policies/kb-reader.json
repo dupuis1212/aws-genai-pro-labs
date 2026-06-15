@@ -10,7 +10,7 @@
         "bedrock:RetrieveAndGenerate"
       ],
       "Resource": [
-        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/relay-kb"
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/${KB_ID}"
       ]
     },
     {

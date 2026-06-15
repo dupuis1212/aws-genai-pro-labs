@@ -30,7 +30,7 @@
 
 | Best practice (Lens) | Status | Relay control (module) | Gap → "In production" |
 |---|---|---|---|
-| Treat customer content as untrusted | ✅ | **`relay-guardrail`** (content/topics/words/prompt-attack) on every `converse()` + standalone ApplyGuardrail (M9) | — |
+| Treat customer content as untrusted | ✅ | **`relay-guardrail`** (content/topics/words/prompt-attack) — standalone ApplyGuardrail + the `converse()` hook (M9); the agent's ReAct path leans on the system prompt + IAM tool boundary | Wire the guardrail onto the agent's request path (M9 next step) |
 | Defend against prompt injection / exfiltration | ✅ | Prompt-attack filter (M9) + the IAM tool boundary on `lookup_order`/`create_ticket` (M7) — a slipped injection still cannot read another customer's data | A red-team pass beyond the 12-attack suite |
 | Keep PII out of the model and the logs | ✅ | Comprehend `DetectPiiEntities` redaction at intake **before** any FM call, `Ticket.pii_redacted` (M10); guardrail PII mask; events carry id+status only (M11) | KMS CMK on the data bucket / table (default SSE today) |
 | Least-privilege IAM per component | ✅ | `iam/policies/*.json` — explicit Action/Resource ARNs, zero wildcards (M10) | A periodic access review / Access Analyzer in CI |

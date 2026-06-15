@@ -123,7 +123,7 @@ def _print_aggregate(per_question: list[dict[str, StrategyScore]]) -> None:
         ("mean recall", lambda s: sum(
             q[s].recall_hits / q[s].recall_total for q in per_question) / n),
     ):
-        print(f"  {label:<11}" + "".join(f"{fn(s):<14.2f}" for s in STRATEGIES))
+        print(f"  {label:<14}" + "".join(f"{fn(s):<14.2f}" for s in STRATEGIES))
     print("\nNote: relevance is the HAND-LABELLED ground truth in "
           "data/questions.json;")
     print("scores are plain cosine similarity. No LLM-as-a-judge, no RAG eval "

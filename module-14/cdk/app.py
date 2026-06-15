@@ -5,7 +5,7 @@
 two stacks:
 
     uv run cdk deploy RelayApiStack        # the API + 4 Lambda + SQS + relay-events
-    uv run cdk deploy RelayPipelineStack   # the CodePipeline (build->smoke->deploy)
+    uv run cdk deploy RelayPipelineStack   # the CodePipeline (Source->Build->Deploy->Smoke)
     uv run cdk deploy --all                # both
 
 The pipeline source defaults to placeholders; pass your fork + a CodeStar connection ARN

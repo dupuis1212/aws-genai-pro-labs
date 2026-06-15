@@ -83,8 +83,10 @@ A rubric (criteria + a 1–5 scale + what each criterion means) scoring Relay's 
 + agent actions as **Pydantic-validated JSON**, with **one retry** that feeds the validation
 error back (no silent `try/except`). **The judge is never the candidate:** Relay answers with
 **Amazon Nova**, so the judge is **Anthropic Claude Haiku 4.5** — crossing vendors kills the
-**self-preference bias** at zero cost. It runs on the **Flex tier (−50%)** because an eval job
-tolerates latency. **Calibrate before you trust it:** `judge.calibration_agreement(...)` checks
+**self-preference bias** at zero cost. An eval job tolerates latency, so it *requests* the
+**Flex tier (−50%)** — but Claude Haiku 4.5 currently serves only the `default` tier, so this
+judge bills at standard (see the freshness note above; no phantom −50%). **Calibrate before you
+trust it:** `judge.calibration_agreement(...)` checks
 the judge lands within 1 point of a handful of hand-scored cases (aim ≥ 0.8) before its scores
 gate anything.
 

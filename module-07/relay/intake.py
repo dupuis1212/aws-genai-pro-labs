@@ -499,8 +499,10 @@ def intake(
     """Turn a raw payload into a validated, normalized Ticket. The whole pipeline.
 
     Steps run in the order PII redaction (Module 10) will need: validate -> normalize
-    -> [Module 10 redaction slots in here] -> Comprehend entities -> screenshot read.
-    Each FM/AWS-touching step happens only AFTER the cheap validation gates pass.
+    -> cheap attachment gate (type/size) -> [Module 10 redaction slots in here] ->
+    Comprehend entities -> screenshot read. Each FM/AWS-touching step (Comprehend, the
+    vision read) happens only AFTER every cheap validation gate — including the
+    attachment type/size gate — has passed, so a bad attachment never pays for an API call.
 
     Args:
         raw: the parsed raw payload (channel + body + optional header ids).
@@ -523,22 +525,32 @@ def intake(
     normalized = validate_nonempty(normalized)
     # (Module 10 redaction would run HERE, on `normalized`, before anything below.)
 
-    # --- 3. Comprehend entities, appended as a structured [Entities] line --------
-    entities = detect_entities(normalized, client=comprehend_client)
-    message = normalized
-    if not entities.is_empty():
-        message = f"{normalized}\n\n{ENTITIES_HEADER}\n{entities.as_line()}"
-
-    # --- 4. Attachment: validate -> upload -> vision read -> [Attachment summary]
-    attachments: list[Attachment] = []
-    summary: str | None = None
+    # --- 3. Cheap attachment gates (type/size) — BEFORE any billed AWS call ------
+    # Reject a bad attachment (missing filename, wrong type, oversized) HERE so a
+    # valid-body + bad-attachment ticket never pays for the Comprehend call below.
+    # Validation is the one step that saves money by running first (the M6 thesis).
+    media_type: str | None = None
     if attachment_bytes is not None:
+        # Defensive invariant: shipped callers pass attachment_bytes and attachment_filename
+        # together (the CLI always supplies both), so this guards a programming error, not
+        # user input.
         if not attachment_filename:
             raise IntakeRejected(
                 "An attachment was provided without a filename.",
                 reason="attachment_no_name",
             )
         media_type = validate_attachment(attachment_filename, attachment_bytes)
+
+    # --- 4. Comprehend entities, appended as a structured [Entities] line --------
+    entities = detect_entities(normalized, client=comprehend_client)
+    message = normalized
+    if not entities.is_empty():
+        message = f"{normalized}\n\n{ENTITIES_HEADER}\n{entities.as_line()}"
+
+    # --- 5. Attachment: upload -> vision read -> [Attachment summary] ------------
+    attachments: list[Attachment] = []
+    summary: str | None = None
+    if attachment_bytes is not None:
         att = upload_attachment(
             attachment_bytes, attachment_filename, media_type,
             account=account, s3_client=s3_client,

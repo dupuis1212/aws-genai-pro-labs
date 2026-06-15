@@ -9,7 +9,7 @@
     { "ticket_id": "ticket-006", "expected_intent": "billing",   "expected_priority": "urgent" },
     { "ticket_id": "ticket-007", "expected_intent": "shipping",  "expected_priority": "high" },
     { "ticket_id": "ticket-008", "expected_intent": "other",     "expected_priority": "low" },
-    { "ticket_id": "ticket-009", "expected_intent": "billing",   "expected_priority": "urgent" },
+    { "ticket_id": "ticket-009", "expected_intent": "billing",   "expected_priority": "high" },
     { "ticket_id": "ticket-010", "expected_intent": "technical", "expected_priority": "high" }
   ]
 }

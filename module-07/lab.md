@@ -3,14 +3,14 @@
 > **This lab cost me about $0.02 on June 2026 prices** (well under the syllabus budget
 > of < $2 for Module 7). Every token figure below is read from the API response, never
 > guessed — a single instrumented agent run measured ~3,600 in / ~150 out tokens across
-> 2 smart-tier model calls = ~$0.0013. The spend is a handful of **Amazon Nova 2 Lite**
+> 3 smart-tier model calls (lookup_order → create_ticket → final answer) = ~$0.0013. The spend is a handful of **Amazon Nova 2 Lite**
 > (smart-tier) agent runs — each a short ReAct loop of a few model calls — plus the
 > inherited KB/embedding calls. DynamoDB on-demand, the MCP Lambda, and the Function URL
 > bill **~$0 idle**. Measured breakdown:
 >
 > | Item | Real usage observed | Cost |
 > |---|---|---|
-> | agent runs (smart tier, ~5 runs × 2 model calls) | ~3,600 in / ~180 out per run | ~$0.0077 |
+> | agent runs (smart tier, ~5 runs × 3 model calls) | ~3,600 in / ~180 out per run | ~$0.0077 |
 > | live smoke KB RetrieveAndGenerate (1) | ~1,500 in / ~200 out | $0.00095 |
 > | live smoke `converse` (fast + smart) | ≤64 out each | $0.00019 |
 > | live smoke Nova Lite vision (1) | ~808 in / ~38 out | $0.00006 |

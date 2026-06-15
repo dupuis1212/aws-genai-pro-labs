@@ -4520,12 +4520,13 @@ def test_iam_policies_have_no_wildcards():
 
 def test_iam_policies_reference_canonical_resource_names():
     # The ARNs name the frozen canonical resources (06 §2): relay-orders, relay-tickets,
-    # relay-guardrail, relay-kb, relay-<account_id>.
+    # relay-orders, relay-tickets, relay-<account_id>; the KB/guardrail ARNs use
+    # ${KB_ID}/${GUARDRAIL_ID} placeholders resolved to their system ids at deploy.
     agent_pol = (IAM_DIR / "agent.json").read_text(encoding="utf-8")
     assert "table/relay-orders" in agent_pol
     assert "table/relay-tickets" in agent_pol
-    assert "guardrail/relay-guardrail" in agent_pol
-    assert "knowledge-base/relay-kb" in agent_pol
+    assert "guardrail/${GUARDRAIL_ID}" in agent_pol  # resolved to the system id at deploy
+    assert "knowledge-base/${KB_ID}" in agent_pol      # resolved to the system id at deploy
     intake_pol = (IAM_DIR / "intake.json").read_text(encoding="utf-8")
     assert "relay-${ACCOUNT_ID}/attachments/" in intake_pol
 

@@ -91,8 +91,9 @@ _RETRYABLE_CODES = frozenset(
     }
 )
 
-# Keys this layer manages itself — callers pass everything else through **params
-# straight into the Converse request (e.g. inferenceConfig, system, toolConfig).
+# Keys this layer forwards from **params into the Converse request. A caller may pass
+# inferenceConfig / system / toolConfig / additionalModelRequestFields; any OTHER key
+# in **params is ignored (this layer owns modelId, messages, tiers, retries, backoff).
 _INFERENCE_KEYS = {"inferenceConfig", "system", "toolConfig", "additionalModelRequestFields"}
 
 

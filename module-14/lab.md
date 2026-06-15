@@ -74,9 +74,11 @@ CloudWatch → Logs Insights → /relay/bedrock/model-invocations
 
 The worker (`relay/api/worker_handler.py`) now emits one **EMF** line per ticket **by
 addition** — the CloudWatch agent turns it into metrics for free, no extra API call:
-`CostCents` ($/ticket, the M12 number), `InputTokens`/`OutputTokens`, `Escalated`,
-`GuardrailBlocked`, plus the agent's `ToolLatencyMs`. The eval harness pushes the last run's
-grounding as `EvalGrounding`:
+`CostCents` ($/ticket, the M12 number), `InputTokens`/`OutputTokens`, `Escalated`, and
+`GuardrailBlocked`. (`ticket_metrics` also accepts an optional `tool_latency_ms` feeding the
+dashboard's `ToolLatencyMs` widget; the worker leaves it unset until tool-call timing is
+threaded through `run_relay`.) The eval harness pushes the last run's grounding as
+`EvalGrounding`:
 
 ```bash
 uv run python evals/run_evals.py --live --emit-metrics \

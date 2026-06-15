@@ -489,7 +489,7 @@ def print_recap(outcomes: list[TicketOutcome], recap: dict[str, Any]) -> None:
     print(f"  by category           : {recap['by_category']}")
     print(f"  escalation rate       : {recap['escalation_rate']:.1%}")
     print(f"  awaiting approval     : {recap['awaiting_approval']}")
-    print(f"  total $/ticket        : {recap['total_cost_usd']:.4f} USD "
+    print(f"  total cost (run)      : {recap['total_cost_usd']:.4f} USD "
           f"({recap['total_cost_cents']:.3f}¢ over {recap['tickets']} tickets)")
     print(f"  cost per ticket       : {recap['cost_per_ticket_cents']:.4f}¢")
     print(f"  p95 latency           : {recap['p95_latency_ms']:.0f} ms")

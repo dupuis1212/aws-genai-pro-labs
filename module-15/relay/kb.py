@@ -248,7 +248,6 @@ def _vector_search_config(
     search_type: str,
     rerank: bool,
     category: str | None,
-    account: str | None,
 ) -> dict:
     """Assemble the vectorSearchConfiguration shared by Retrieve and RAG.
 
@@ -342,7 +341,7 @@ def retrieve(
     kb = resolve_kb_id(kb_id)
     vsc = _vector_search_config(
         top_k=top_k, search_type=search_type, rerank=rerank,
-        category=category, account=account,
+        category=category,
     )
     response = _call_with_retry(
         lambda: client.retrieve(
@@ -426,7 +425,7 @@ def answer(
 
     vsc = _vector_search_config(
         top_k=top_k, search_type=search_type, rerank=rerank,
-        category=category, account=account,
+        category=category,
     )
 
     kb_config: dict = {
@@ -503,17 +502,24 @@ def _print_answer(result: Answer) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    grounding = False
+    if argv and argv[0] in ("--grounding-check", "--ground"):
+        grounding = True          # Module 9: also run the contextual grounding check
+        argv = argv[1:]
     if len(argv) != 1:
         print(
-            'Usage: uv run python -m relay.kb "<your question>"\n'
+            'Usage: uv run python -m relay.kb [--grounding-check] "<your question>"\n'
             'Example: uv run python -m relay.kb '
-            '"How do I change my CloudCart subscription plan?"',
+            '"How do I change my CloudCart subscription plan?"\n'
+            '  --grounding-check / --ground  also run the Module 9 contextual grounding '
+            'check (a second Bedrock guardrail call) and print whether the answer is '
+            'grounded in its citations.',
             file=sys.stderr,
         )
         return 1
 
     try:
-        result = answer(argv[0])
+        result = answer(argv[0], grounding_check=grounding)
     except KBError as err:
         print(f"Knowledge Base call failed: {err}", file=sys.stderr)
         return 1

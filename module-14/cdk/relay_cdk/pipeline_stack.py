@@ -80,7 +80,7 @@ def build_pipeline_stack(scope, construct_id: str = config.RELAY_PIPELINE_STACK_
     from constructs import Construct
 
     class RelayPipelineStack(Stack):
-        """The CodePipeline that re-deploys Relay on every commit (build->smoke->deploy)."""
+        """The CodePipeline that re-deploys Relay on every commit (Source->Build->Deploy->Smoke)."""
 
         def __init__(self, scope: Construct, cid: str, **kw) -> None:
             super().__init__(scope, cid, **kw)

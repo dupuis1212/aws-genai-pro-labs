@@ -1,10 +1,8 @@
 {
   "Version": "2012-10-17",
-  "Comment": "Least-privilege policy for the AWS GenAI Pro Mastery course, Module 1. Attach to a dedicated IAM user/role used only for this course (AWS_PROFILE=aws-genai-pro, region us-east-1). This is the M1 footprint only; later modules ship their own per-component policies under relay/iam/policies/ (M10). 'Comment' keys are documentation and are ignored by IAM.",
   "Statement": [
     {
       "Sid": "BedrockConverseAndInvoke",
-      "Comment": "The first token. Converse/ConverseStream is the course's call path; InvokeModel* is included because on-demand inference-profile calls are authorized as InvokeModelWithResponseStream under the hood, and later modules use invoke_model exactly once (Titan embeddings, M4). The foundation-model/* ARNs are the underlying model resources an inference-profile call ALSO authorizes (Converse on an inference profile evaluates both the inference-profile/* and the foundation-model/* ARN) — they are RESOURCE SCOPES, never modelIds passed to converse(), which are always us.* inference profiles. Not a bare-regional-ID violation.",
       "Effect": "Allow",
       "Action": [
         "bedrock:Converse",
@@ -21,7 +19,6 @@
     },
     {
       "Sid": "BedrockReadCatalogAndAccess",
-      "Comment": "List the model catalog (setup.py sanity check) and read/submit the one-time Anthropic use-case form. No InvokeModel here — read/admin only.",
       "Effect": "Allow",
       "Action": [
         "bedrock:ListFoundationModels",
@@ -35,7 +32,6 @@
     },
     {
       "Sid": "BudgetsManageCourseBudget",
-      "Comment": "setup.py creates/reconciles the $5 monthly budget and its 80% notification; teardown.py reads it and (at course end, --delete-budget) deletes it. Budgets is global, anchored to us-east-1; its IAM actions (ViewBudget/ModifyBudget) collapse create/update/describe/delete and CANNOT be resource-scoped per-budget reliably, so they are granted on the account budget namespace. ModifyBudget covers create, update, and delete.",
       "Effect": "Allow",
       "Action": [
         "budgets:ViewBudget",
@@ -45,7 +41,6 @@
     },
     {
       "Sid": "SnsForBudgetNotifications",
-      "Comment": "AWS Budgets uses email subscribers directly (no SNS topic needed for the 80% alert), but SNS is granted for the budget notification plumbing and for later modules' alarms. Scoped to course-prefixed topics.",
       "Effect": "Allow",
       "Action": [
         "sns:CreateTopic",
@@ -60,7 +55,6 @@
     },
     {
       "Sid": "StsWhoAmI",
-      "Comment": "setup.py/teardown.py resolve the account ID (Budgets calls are account-scoped). Read-only.",
       "Effect": "Allow",
       "Action": "sts:GetCallerIdentity",
       "Resource": "*"

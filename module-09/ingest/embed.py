@@ -19,9 +19,10 @@ summing the token count for one honest cost line. For a course-scale corpus
 Lambda/async batch pattern for a corpus of millions.
 
 The Nova successor `amazon.nova-2-multimodal-embeddings-v1:0` EXISTS as of June
-2026, but it stays OUT of this index: it has a different dimensionality and the
-managed Knowledge Base at Module 5 and the semantic cache at Module 12 reuse THIS
-1024-dim index. Changing the embedder would invalidate all three. So Titan V2 is
+2026, but it stays OUT of this index: re-embedding the corpus would produce vectors the
+existing 1024-dim relay-docs index cannot compare against, and the managed Knowledge
+Base at Module 5 and the semantic cache at Module 12 reuse THAT index. Changing the
+embedder would invalidate all three. So Titan V2 is
 the pinned default and the only model this file knows.
 """
 

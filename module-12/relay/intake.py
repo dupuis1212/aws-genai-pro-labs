@@ -511,8 +511,9 @@ def intake(
     """Turn a raw payload into a validated, normalized, PII-REDACTED Ticket. The pipeline.
 
     Steps run in the order Module 10 PII redaction needs: validate -> normalize ->
-    REDACT PII (Comprehend DetectPiiEntities, by offset) -> Comprehend entities ->
-    screenshot read. The redaction happens on the normalized text BEFORE any
+    cheap attachment gate (type/size) -> REDACT PII (Comprehend DetectPiiEntities, by
+    offset) -> Comprehend entities -> screenshot read. The redaction happens on the
+    normalized text BEFORE any
     foundation-model call (the vision read) AND before the Comprehend entity pass — so
     the FM, the [Entities]/[Attachment summary] enrichment, the agent's decision log,
     the persisted TicketRecord, and AgentCore Memory ALL see the masked message, never
@@ -546,7 +547,24 @@ def intake(
     normalized = normalize(raw_text)
     normalized = validate_nonempty(normalized)
 
-    # --- 3. REDACT PII (Module 10) — BEFORE any FM call and before the entity pass.
+    # --- 3. Cheap attachment gates (type/size) — BEFORE any billed AWS call ------
+    # Reject a bad attachment (missing filename, wrong type, oversized) HERE so a
+    # valid-body + bad-attachment ticket never pays for the two Comprehend calls below
+    # (PII redaction + entity detection). Validation is the one step that saves money
+    # by running first.
+    media_type: str | None = None
+    if attachment_bytes is not None:
+        # Defensive invariant: shipped callers pass attachment_bytes and attachment_filename
+        # together (the CLI always supplies both), so this guards a programming error, not
+        # user input.
+        if not attachment_filename:
+            raise IntakeRejected(
+                "An attachment was provided without a filename.",
+                reason="attachment_no_name",
+            )
+        media_type = validate_attachment(attachment_filename, attachment_bytes)
+
+    # --- 4. REDACT PII (Module 10) — BEFORE any FM call and before the entity pass.
     # This is the edge: from here on, `safe_text` carries [NAME]/[EMAIL]/[PHONE] instead
     # of the customer's real values, so nothing downstream (vision FM call, entity
     # enrichment, decision log, persisted record, memory) ever sees the raw PII.
@@ -557,26 +575,20 @@ def intake(
     else:
         safe_text = normalized
 
-    # --- 4. Comprehend entities (on the REDACTED text), as a structured [Entities] line
+    # --- 5. Comprehend entities (on the REDACTED text), as a structured [Entities] line
     entities = detect_entities(safe_text, client=comprehend_client)
     message = safe_text
     if not entities.is_empty():
         message = f"{safe_text}\n\n{ENTITIES_HEADER}\n{entities.as_line()}"
 
-    # --- 5. Attachment: validate -> upload -> vision read -> [Attachment summary] ----
-    # The screenshot read is a foundation-model (Nova Lite) call. It runs AFTER step 3,
+    # --- 6. Attachment: upload -> vision read -> [Attachment summary] ------------
+    # The screenshot read is a foundation-model (Nova Lite) call. It runs AFTER redaction,
     # so the surrounding ticket text the model sees is already masked. (The image bytes
     # themselves are not text Comprehend can scan; the article notes Macie/Bedrock Data
     # Automation as the at-rest path for files — not built here.)
     attachments: list[Attachment] = []
     summary: str | None = None
     if attachment_bytes is not None:
-        if not attachment_filename:
-            raise IntakeRejected(
-                "An attachment was provided without a filename.",
-                reason="attachment_no_name",
-            )
-        media_type = validate_attachment(attachment_filename, attachment_bytes)
         att = upload_attachment(
             attachment_bytes, attachment_filename, media_type,
             account=account, s3_client=s3_client,

@@ -1084,9 +1084,10 @@ def ensure_agentcore_memory(control) -> str:
     """Create (or reuse) the AgentCore Memory store `relay-memory`. Returns its id.
 
     Idempotent: a re-run finds the existing store and reuses it. The store carries BOTH
-    short-term session events and a long-term cross-session strategy with a bounded
-    retention (config.AGENTCORE_MEMORY_EXPIRY_DAYS) so the recurring cost stays near
-    zero. The id is recorded in .memory_id for relay.run / the agentcore CLI."""
+    short-term session events (retained for config.AGENTCORE_MEMORY_EXPIRY_DAYS via
+    eventExpiryDuration) and a long-term cross-session strategy. The long-term strategy is
+    the one idle-billed piece (purged at teardown), so the recurring cost stays near zero.
+    The id is recorded in .memory_id for relay.run / the agentcore CLI."""
     name = config.AGENTCORE_MEMORY_NAME
     existing = _find_memory_id(control, name)
     if existing:
@@ -1108,7 +1109,13 @@ def ensure_agentcore_memory(control) -> str:
         "eventExpiryDuration": config.AGENTCORE_MEMORY_EXPIRY_DAYS,
         "memoryStrategies": [
             {"semanticMemoryStrategy": {
-                "name": config.AGENTCORE_MEMORY_STRATEGY_NAME}},
+                "name": config.AGENTCORE_MEMORY_STRATEGY_NAME,
+                # The long-term strategy writes records under this namespace so each
+                # customer's facts are isolated (run.py retrieves with the SAME template).
+                # AgentCore substitutes {actorId}; run.py's client-side .format() uses
+                # {actor_id} — both resolve to the customer id, so writer and reader agree.
+                "namespaces": [
+                    config.MEMORY_LONG_TERM_NAMESPACE.replace("{actor_id}", "{actorId}")]}},
         ],
     }
     resp = control.create_memory(**kwargs)
@@ -1488,6 +1495,24 @@ def load_component_policy(stem: str, account: str) -> str:
     path = IAM_POLICIES_DIR / f"{stem}.json"
     raw = path.read_text(encoding="utf-8")
     raw = raw.replace("${ACCOUNT_ID}", account).replace("${REGION}", REGION)
+    # Bedrock KB/guardrail ARNs need the SYSTEM id (e.g. knowledge-base/Z8W9HXBPD1), never
+    # the human name — a name-based ARN never matches the live resource. Resolve the ids the
+    # same way the runtime does (config.resolve_guardrail_id / kb.resolve_kb_id); if one is
+    # not provisioned yet, fall back to a resource-type scope within this dedicated account
+    # so setup never crashes and the grant still authorizes.
+    if "${GUARDRAIL_ID}" in raw:
+        try:
+            gid = config.resolve_guardrail_id()
+        except Exception:
+            gid = "*"
+        raw = raw.replace("${GUARDRAIL_ID}", gid)
+    if "${KB_ID}" in raw:
+        from relay import kb as _kb
+        try:
+            kb_id = _kb.resolve_kb_id()
+        except Exception:
+            kb_id = "*"
+        raw = raw.replace("${KB_ID}", kb_id)
     doc = json.loads(raw)
     doc.pop("Comment", None)
     return json.dumps(doc)

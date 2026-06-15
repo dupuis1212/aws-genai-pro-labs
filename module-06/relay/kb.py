@@ -248,7 +248,6 @@ def _vector_search_config(
     search_type: str,
     rerank: bool,
     category: str | None,
-    account: str | None,
 ) -> dict:
     """Assemble the vectorSearchConfiguration shared by Retrieve and RAG.
 
@@ -342,7 +341,7 @@ def retrieve(
     kb = resolve_kb_id(kb_id)
     vsc = _vector_search_config(
         top_k=top_k, search_type=search_type, rerank=rerank,
-        category=category, account=account,
+        category=category,
     )
     response = _call_with_retry(
         lambda: client.retrieve(
@@ -417,7 +416,7 @@ def answer(
 
     vsc = _vector_search_config(
         top_k=top_k, search_type=search_type, rerank=rerank,
-        category=category, account=account,
+        category=category,
     )
 
     kb_config: dict = {

@@ -153,6 +153,10 @@ def offline_converse_factory() -> Callable:
     state = {"warm": set()}  # tiers whose prompt prefix is already cached (2nd call is warm)
 
     def _offline_converse(messages, *, tier="auto", stream=False, **params):
+        # The offline report keeps tier="auto" -> fast for a DETERMINISTIC before/after
+        # table (the real fast/smart router split is exercised on the live path; mixing
+        # smart calls into this wall-clock-timed offline run makes the p95 comparison
+        # non-deterministic). The router itself is unit-tested separately.
         concrete = "fast" if tier in ("fast", "auto") else tier
         base = usage_by_tier.get(concrete, usage_by_tier["smart"])
         cache_read = 0

@@ -126,7 +126,7 @@ RECAP
   by category           : {'nominal': 16, 'adversarial': 2, 'multimodal': 2}
   escalation rate       : 0.0%
   awaiting approval     : 2
-  total $/ticket        : 0.0746 USD (7.457¢ over 20 tickets)
+  total cost (run)      : 0.0746 USD (7.457¢ over 20 tickets)
   cost per ticket       : 0.3729¢
   p95 latency           : 7327 ms
   golden-set grounding  : 0.963  (floor 0.8)

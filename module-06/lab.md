@@ -115,6 +115,7 @@ on — **no silent `try/except`**:
 | non-empty after normalize | a body that is all signature/thread | `empty_message` |
 | admitted image type | a PDF / zip / .exe attachment | `bad_attachment_type` |
 | attachment size (4 MB) | an over-size image | `attachment_too_large` |
+| non-empty attachment | a zero-byte attachment | `attachment_empty` |
 | channel | anything but `email` / `chat` | `bad_channel` |
 
 ```bash

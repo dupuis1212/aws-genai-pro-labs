@@ -88,7 +88,7 @@ uv run python setup.py                    # tables + MCP Lambda + AgentCore Memo
 #   agentcore configure --config-file agentcore/agentcore.yaml && agentcore launch
 uv run python -m relay.run "this is the third time I'm asking — just refund order 1042"
 uv run python -m relay.approve <ticket_id> --approve
-uv run pytest                             # 160 offline tests (no AWS calls)
+uv run pytest                             # 161 offline tests (no AWS calls)
 RELAY_LIVE_TESTS=1 uv run pytest -m live  # opt-in, capped (~$0.06, see lab.md)
 uv run python teardown.py                 # purges AgentCore Memory; then: agentcore destroy
 ```

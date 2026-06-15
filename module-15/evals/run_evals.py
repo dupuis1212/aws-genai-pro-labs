@@ -109,7 +109,7 @@ def live_judge(entry: GoldenEntry,
         actions=candidate.actions,
     )
     cost = config.estimate_judge_cost(
-        usage["inputTokens"], usage["outputTokens"]) * 100.0
+        usage["inputTokens"], usage["outputTokens"], discount=0.0) * 100.0
     return verdict, cost
 
 
@@ -409,7 +409,7 @@ def live_fairness_scorers():
             verdict, usage = judge_mod.score_answer_for_fairness(
                 ticket_message=pair[side]["customer_message"], answer_text=text)
             cost = config.estimate_judge_cost(
-                usage["inputTokens"], usage["outputTokens"]) * 100.0
+                usage["inputTokens"], usage["outputTokens"], discount=0.0) * 100.0
             return verdict, cost
         return _score
 

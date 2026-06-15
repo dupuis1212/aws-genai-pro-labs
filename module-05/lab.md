@@ -15,7 +15,8 @@
 >   **RetrieveAndGenerate** calls on the **smart** tier (`us.amazon.nova-2-lite-v1:0`,
 >   ~$0.30 in / ~$2.50 out per million tokens) — a few hundred tokens each, a few
 >   cents total. `compare_retrieval.py` makes ~24 **Retrieve** calls (8 questions ×
->   3 runnable KB configs) — Retrieve embeds the query and searches; no generation.
+>   3 runnable KB configs) — Retrieve embeds the query and searches; no generation —
+>   plus 8 **HYBRID** attempts S3 Vectors rejects immediately (no charge, caught as n/a).
 > - **Reranker** — reranked retrievals/answers add the **Cohere Rerank 3.5** fee
 >   (~$2.00 / 1,000 queries). This is the single biggest line if you rerank a lot:
 >   ~60 reranked calls during a full run + the "Try it yourself" ≈ **$0.12**. (Watch
@@ -256,9 +257,11 @@ for a clean slate (Module 4's setup would then need a re-run).
 1. **Metadata filtering for multi-tenant retrieval.** `retrieve()` and `answer()`
    take a `category` argument that scopes retrieval to one CloudCart category
    (`billing`, `technical`, ...). Ask a `billing` question with
-   `category="technical"` and watch retrieval come back empty — the lever a
-   multi-tenant deployment uses to keep one customer's docs out of another's
-   answers.
+   `category="technical"`: the filter scopes retrieval to the technical docs, so
+   you get technical chunks back — none answering the billing question — and the
+   grounded answer comes back empty or refuses for lack of support. That filter is
+   the lever a multi-tenant deployment uses to keep one customer's docs out of
+   another's answers.
 2. **Is the reranker worth its latency?** Time `retrieve(..., rerank=False)` vs
    `retrieve(..., rerank=True)` on the same query (Python's `time.perf_counter`).
    The reranker adds a cross-encoder pass and a per-query fee. On CloudCart's short,

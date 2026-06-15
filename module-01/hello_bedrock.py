@@ -13,6 +13,7 @@ It prints the model's reply, then a line like:
 
 from __future__ import annotations
 
+import os
 import sys
 
 import boto3
@@ -47,6 +48,12 @@ SYSTEM_PROMPT = (
 
 DEFAULT_QUESTION = "What does CloudCart sell?"
 
+# Temperature is overridable from the environment so you can experiment in Step 5
+# (`RELAY_TEMPERATURE=0.9 uv run python hello_bedrock.py`) WITHOUT editing this
+# file — the offline test pins the default (0.2), so an in-place edit would make
+# `uv run pytest` fail on the asserted request shape.
+TEMPERATURE = float(os.environ.get("RELAY_TEMPERATURE", "0.2"))
+
 
 def estimate_cost(input_tokens: int, output_tokens: int) -> float:
     """Cost in USD from the usage block the API returns — never a guess."""
@@ -69,7 +76,7 @@ def main() -> int:
             modelId=MODEL_ID,
             system=[{"text": SYSTEM_PROMPT}],
             messages=[{"role": "user", "content": [{"text": question}]}],
-            inferenceConfig={"maxTokens": 300, "temperature": 0.2},
+            inferenceConfig={"maxTokens": 300, "temperature": TEMPERATURE},
         )
     except ClientError as err:
         # No silent except. The single failure mode worth teaching in M1 is the

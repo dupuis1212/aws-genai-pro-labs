@@ -3,8 +3,10 @@
 > **This lab cost me about $0.02 on June 2026 prices** (well under the syllabus budget of
 > < $2 for Module 8). Every token figure below is read from the API response, never
 > guessed. The spend is a handful of **Amazon Nova 2 Lite** (smart-tier) agent runs — and
-> a handoff makes each refund ticket **two reasoning loops** (the generalist routes, the
-> Billing specialist resolves), so a refund ticket is the most expensive path. **Bedrock
+> on a refund the handoff is a **deterministic pre-check** (`is_refund_request`, no model
+> turn), then the **Billing specialist** runs a longer reasoning loop than a generalist
+> answer (`lookup_order` → `refund` → `create_ticket`), so a refund ticket is the most
+> expensive path. **Bedrock
 > AgentCore Runtime** bills per second of active consumption and is **free when idle**;
 > **AgentCore Memory** short-term events cost cents, and the **long-term store is the only
 > idle-billed item** (~$0.75 / 1K records / month — purged at teardown). Measured
@@ -12,7 +14,7 @@
 >
 > | Item | Real usage observed | Cost |
 > |---|---|---|
-> | refund handoff runs (generalist routes + Billing specialist resolves, ~4 runs × 3 model calls) | ~5,500 in / ~300 out per run | ~$0.0096 |
+> | refund handoff runs (deterministic pre-route + Billing specialist resolves, ~4 runs × 3 model calls) | ~5,500 in / ~300 out per run | ~$0.0096 |
 > | non-refund generalist run (single agent) | ~3,500 in / ~200 out | ~$0.0016 |
 > | inherited live smoke (fast/smart/KB-RAG/vision/Titan/M7-agent) | small | ~$0.0034 |
 > | M8 live handoff smoke (smart-tier refund propose) | ~5,500 in / ~300 out | ~$0.0024 |
@@ -213,7 +215,7 @@ uv run python -m relay.run "did my refund go through?" --customer dana --session
 ## Step 7 — Tests
 
 ```bash
-uv run pytest                              # 160 offline tests, no AWS calls (moto + Stubber)
+uv run pytest                              # 161 offline tests, no AWS calls (moto + Stubber)
 RELAY_LIVE_TESTS=1 uv run pytest -m live   # opt-in, capped — up to 8 calls, ~$0.06
 ```
 

@@ -1,6 +1,6 @@
 {
   "Version": "2012-10-17",
-  "Comment": "Least-privilege policy for the Relay AGENT component (relay.agent + its tools) — Module 10, skill 3.2.1. The Strands agent reasons on the smart/fast inference profiles through converse(), applies the relay-guardrail in-line and standalone (relay.safety), reads order status from relay-orders, writes a TicketRecord to relay-tickets, and runs the search_kb tool against the relay-kb Knowledge Base. Every action and resource is explicit: the two table ARNs (read-only on orders, write on tickets — the exact M7 boundary), the named guardrail ARN, the named Knowledge Base ARN, and the inference profiles it is allowed to call. No '*', no admin, no S3. ${ACCOUNT_ID}/${REGION} substituted by setup.py from STS.",
+  "Comment": "Least-privilege policy for the Relay AGENT component (relay.agent + its tools) — Module 10, skill 3.2.1. The Strands agent reasons on the smart/fast inference profiles through converse(), applies the relay-guardrail in-line and standalone (relay.safety), reads order status (GetItem) from relay-orders, writes a TicketRecord to relay-tickets, and runs the search_kb tool against the relay-kb Knowledge Base. Every action and resource is explicit: the two table ARNs (read-only on orders, write on tickets — the exact M7 boundary), the guardrail and Knowledge Base ARNs (resolved from their SYSTEM ids at deploy via ${GUARDRAIL_ID}/${KB_ID} — a name-based ARN never matches the live resource), and the SMART-tier inference profile it is allowed to call (the agent reasons on SMART only; it never uses the fast/nova-micro tier or DynamoDB Query/BatchGetItem). No '*', no admin, no S3. ${ACCOUNT_ID}/${REGION} substituted by setup.py from STS.",
   "Statement": [
     {
       "Sid": "ReasonOnAllowedInferenceProfiles",
@@ -13,9 +13,7 @@
       ],
       "Resource": [
         "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:inference-profile/us.amazon.nova-2-lite-v1:0",
-        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:inference-profile/us.amazon.nova-micro-v1:0",
-        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-2-lite-v1:0",
-        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-micro-v1:0"
+        "arn:aws:bedrock:${REGION}::foundation-model/amazon.nova-2-lite-v1:0"
       ]
     },
     {
@@ -25,16 +23,14 @@
         "bedrock:ApplyGuardrail"
       ],
       "Resource": [
-        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:guardrail/relay-guardrail"
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:guardrail/${GUARDRAIL_ID}"
       ]
     },
     {
       "Sid": "ReadOrdersOnly",
       "Effect": "Allow",
       "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:Query",
-        "dynamodb:BatchGetItem"
+        "dynamodb:GetItem"
       ],
       "Resource": [
         "arn:aws:dynamodb:${REGION}:${ACCOUNT_ID}:table/relay-orders"
@@ -60,7 +56,7 @@
         "bedrock:RetrieveAndGenerate"
       ],
       "Resource": [
-        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/relay-kb"
+        "arn:aws:bedrock:${REGION}:${ACCOUNT_ID}:knowledge-base/${KB_ID}"
       ]
     }
   ]

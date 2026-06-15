@@ -11,7 +11,7 @@
 > |---|---|---|
 > | `run_attacks.py --guarded` (12 ApplyGuardrail input evaluations) | 12 text units × content/topic/PII | ~$0.005 |
 > | `run_attacks.py --baseline` | **no AWS call** (input control absent by definition) | $0.000 |
-> | standalone `relay.safety` + in-line `converse(guardrail=…)` checks | 3 text units | ~$0.001 |
+> | standalone `relay.safety` (ApplyGuardrail) checks | 3 text units | ~$0.001 |
 > | contextual grounding checks (grounded / hallucinated / KB answers) | ~9 grounding evaluations | ~$0.003 |
 > | M9 live smoke (1 attack blocked + 1 legit passed) | 2 text units | <$0.001 |
 > | inherited live smoke (fast/smart/KB-RAG/vision/Titan Nova tokens) | small | ~$0.02 |
@@ -182,10 +182,15 @@ flowchart LR
     F --> G["1 attack still slips +<br/>0 false positives"]
 ```
 
-**Some attacks must remain unblocked** — that is the lesson, printed explicitly. A
-deliberately subtle indirect injection (`atk-12`, framed as a benign QA aside) slips past
-the prompt-attack classifier. That is why a guardrail is **one layer** of defense in depth:
-the IAM tool boundary (Module 7) and post-validation are why a miss is not catastrophic.
+**Some attacks must remain unblocked** — that is the lesson, printed explicitly. Two
+distinct residuals appear. The `8/9` blocking rate means one of the **nine** attacks the
+suite expected to block actually got past the input filter — `run_attacks.py` flags it as
+a mismatch ("malicious attack(s) STILL passed"). Separately, `atk-12` (a deliberately
+subtle indirect injection framed as a benign QA aside) is marked `expect_blocked=false`
+by design — the prompt-attack classifier is *not expected* to catch it, so it sits in the
+pass column and never counts toward the nine. That is why a guardrail is **one layer** of
+defense in depth: the IAM tool boundary (Module 7) and post-validation are why a miss is
+not catastrophic.
 
 ```mermaid
 flowchart TD
@@ -214,7 +219,7 @@ No single layer is sufficient alone; each is a probabilistic classifier.
 ## Step 6 — Tests
 
 ```bash
-uv run pytest                              # 195 offline tests, no AWS calls (moto + Stubber)
+uv run pytest                              # 196 passed, 8 skipped — no AWS calls (moto + Stubber)
 RELAY_LIVE_TESTS=1 uv run pytest -m live   # opt-in, capped — up to 10 calls, ~$0.07
 ```
 
